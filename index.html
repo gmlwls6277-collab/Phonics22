@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="theme-color" content="#FFF9F0"/>
-<title>소리 놀이 🎵</title>
+<title>파닉스공부</title>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800;900&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet"/>
 <style>
 /* ─────────────────────────────────────
@@ -47,6 +47,8 @@ body{font-family:'Nunito',sans-serif;display:flex;align-items:center;justify-con
   background:var(--cream);
   overflow:hidden;
   display:flex; flex-direction:column;
+  /* create an isolated stacking context so nothing bleeds out */
+  isolation:isolate;
 }
 
 /* background decorations */
@@ -57,18 +59,27 @@ body{font-family:'Nunito',sans-serif;display:flex;align-items:center;justify-con
 
 /* ─────────────────────────────────────
    SCREEN SYSTEM
-   All screens are absolute, opacity-toggled.
-   Active screen fades in.
+   All screens absolute, only .on is visible.
+   visibility:hidden completely removes inactive
+   screens from paint — prevents any bleed-through.
 ───────────────────────────────────── */
 .screen{
   position:absolute; inset:0; z-index:1;
   display:flex; flex-direction:column;
   align-items:center;
-  opacity:0; pointer-events:none;
-  transition:opacity .28s ease;
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transition:opacity .28s ease, visibility 0s linear .28s;
   overflow:hidden;
 }
-.screen.on{ opacity:1; pointer-events:all; }
+.screen.on{
+  opacity:1;
+  visibility:visible;
+  pointer-events:all;
+  transition:opacity .28s ease, visibility 0s linear 0s;
+  z-index:2;
+}
 
 /* ─────────────────────────────────────
    PROGRESS BAR (lesson only)
@@ -139,11 +150,12 @@ body{font-family:'Nunito',sans-serif;display:flex;align-items:center;justify-con
 .btn-green:hover:not(:disabled){transform:translateY(-2px);}
 
 .btn-ghost{
-  padding:16px 24px; font-size:16px;
-  background:transparent; color:var(--tan);
-  box-shadow:none;
+  padding:16px 24px; font-size:17px;
+  background:var(--card); color:var(--tan);
+  box-shadow:var(--shadow);
+  border:2px solid #EDE5D8 !important;
 }
-.btn-ghost:hover{color:var(--pink);}
+.btn-ghost:hover{color:var(--pink);border-color:var(--pink) !important;}
 
 .btn-outline{
   padding:18px 24px; font-size:20px;
@@ -182,8 +194,8 @@ body{font-family:'Nunito',sans-serif;display:flex;align-items:center;justify-con
 ───────────────────────────────────── */
 .lesson-content{
   position:absolute; top:60px; left:0; right:0;
-  /* leave room for btn-zone: 3 buttons ≈ 176px + padding */
-  bottom:190px;
+  /* btn-zone: primary(62px) + ghost(53px) + gaps + padding = ~200px */
+  bottom:210px;
   display:flex; flex-direction:column;
   align-items:center; justify-content:center;
   padding:0 24px;
@@ -295,7 +307,7 @@ body{font-family:'Nunito',sans-serif;display:flex;align-items:center;justify-con
    SCREEN: PHONICS BREAKDOWN
 ───────────────────────────────────── */
 .pb-title{font-family:'Baloo 2',sans-serif;font-size:20px;font-weight:800;color:var(--brown);margin-bottom:14px;}
-.pb-blocks{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;justify-content:center;}
+.pb-blocks{display:flex;gap:4px;margin-bottom:14px;flex-wrap:wrap;justify-content:center;align-items:center;}
 .pb-block{
   background:var(--card); border-radius:18px;
   padding:12px 14px; text-align:center;
@@ -305,14 +317,16 @@ body{font-family:'Nunito',sans-serif;display:flex;align-items:center;justify-con
 .pb-block .pb-lt{font-family:'Baloo 2',sans-serif;font-size:32px;font-weight:900;}
 .pb-block .pb-ipa{font-size:13px;font-weight:700;color:var(--tan);}
 .pb-block .pb-kr{font-size:15px;font-weight:800;color:var(--pink);}
+.pb-arrow{font-family:'Baloo 2',sans-serif;font-size:22px;font-weight:900;color:var(--tan);padding:0 2px;line-height:1;}
 .pb-blend{
-  display:flex; align-items:center; gap:6px;
+  display:flex; align-items:center; gap:8px;
   background:var(--card); border-radius:16px;
-  padding:10px 20px; box-shadow:var(--shadow); margin-bottom:8px;
+  padding:12px 22px; box-shadow:var(--shadow); margin-bottom:8px;
+  flex-wrap:wrap; justify-content:center;
 }
-.pb-blend-kr{font-family:'Baloo 2',sans-serif;font-size:20px;font-weight:800;color:var(--brown);letter-spacing:2px;}
-.pb-blend-arrow{font-size:18px;color:var(--tan);}
-.pb-blend-final{font-family:'Baloo 2',sans-serif;font-size:24px;font-weight:900;color:var(--pink);}
+.pb-blend-kr{font-family:'Baloo 2',sans-serif;font-size:18px;font-weight:800;color:var(--brown);letter-spacing:1px;}
+.pb-blend-arrow{font-size:20px;color:var(--tan);}
+.pb-blend-final{font-family:'Baloo 2',sans-serif;font-size:26px;font-weight:900;color:var(--pink);}
 
 /* ─────────────────────────────────────
    SCREEN: REPEAT
@@ -483,12 +497,17 @@ body{font-family:'Nunito',sans-serif;display:flex;align-items:center;justify-con
 .rm-wk-label.cur{color:var(--pink);}
 .rm-chips{display:flex;gap:7px;flex-wrap:wrap;flex:1;}
 .rm-chip{
-  width:42px;height:42px;border-radius:12px;
-  display:flex;align-items:center;justify-content:center;font-size:20px;
+  min-width:44px; height:52px; border-radius:12px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-size:18px; padding:2px 6px; gap:1px;
 }
 .rm-chip.done{background:linear-gradient(135deg,var(--green),var(--teal));}
 .rm-chip.cur{background:linear-gradient(135deg,var(--pink),var(--orange));}
 .rm-chip.lock{background:#F0EAE0;}
+.rm-chip .rc-emo{font-size:18px;line-height:1;}
+.rm-chip .rc-lbl{font-family:'Baloo 2',sans-serif;font-size:10px;font-weight:800;
+  color:var(--brown);line-height:1;}
+.rm-chip.done .rc-lbl,.rm-chip.cur .rc-lbl{color:rgba(255,255,255,.9);}
 .rm-status{font-size:20px;flex-shrink:0;}
 
 /* ─────────────────────────────────────
@@ -626,7 +645,7 @@ body{font-family:'Nunito',sans-serif;display:flex;align-items:center;justify-con
        SCREEN: PHONICS BREAKDOWN (Step 2b)
   ══════════════════════════════ -->
   <div class="screen" id="s-phonics">
-    <div class="lesson-content" style="bottom:180px;">
+    <div class="lesson-content" style="bottom:190px;">
       <div class="step-tag">🔤 소리를 나눠봐!</div>
       <div class="pb-title" id="pb-word-title">ball</div>
       <div class="pb-blocks" id="pb-blocks"></div>
@@ -672,9 +691,9 @@ body{font-family:'Nunito',sans-serif;display:flex;align-items:center;justify-con
        SCREEN: GAME (Step 4)
   ══════════════════════════════ -->
   <div class="screen" id="s-game">
-    <div class="lesson-content" style="bottom:180px;">
+    <div class="lesson-content" style="bottom:190px;">
       <div class="step-tag">🎮 찾아볼까?</div>
-      <div class="game-q"><span id="gq-letter">B</span> 로 시작하는 건?</div>
+      <div class="game-q"><span id="gq-letter">/b/</span> 소리로 시작하는 건?</div>
       <div class="game-grid" id="game-grid"></div>
     </div>
     <div class="btn-zone">
@@ -958,8 +977,13 @@ function lessonColor(lt){
    ROUTING
 ════════════════════════════════════════ */
 function show(id){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
-  document.getElementById(id).classList.add('on');
+  /* Remove .on from every screen first, then add only to target.
+     This guarantees only one screen is ever visible at a time. */
+  document.querySelectorAll('.screen').forEach(s=>{
+    s.classList.remove('on');
+  });
+  const target = document.getElementById(id);
+  if(target) target.classList.add('on');
 }
 
 const LESSON_SCREENS = ['s-sound','s-image','s-phonics','s-repeat','s-game'];
@@ -1061,22 +1085,31 @@ function buildPhonicsBreakdown(L){
   const col = lessonColor(L.lt);
 
   if(L.breakdown && L.breakdown.length){
-    L.breakdown.forEach(b=>{
-      if(!b.kor) return; // skip empty
+    L.breakdown.forEach((b, i)=>{
+      /* block */
       const block = document.createElement('div');
       block.className = 'pb-block';
       block.innerHTML = `
         <span class="pb-lt" style="color:${col}">${b.lt}</span>
-        <span class="pb-ipa">${b.ipa}</span>
-        <span class="pb-kr">${b.kor}</span>
+        <span class="pb-ipa">${b.ipa||'—'}</span>
+        <span class="pb-kr">${b.kor||'—'}</span>
       `;
       container.appendChild(block);
+
+      /* arrow connector between blocks (not after the last) */
+      if(i < L.breakdown.length - 1){
+        const arrow = document.createElement('div');
+        arrow.className = 'pb-arrow';
+        arrow.textContent = '+';
+        container.appendChild(arrow);
+      }
     });
   }
 
-  /* blend row */
+  /* blend row: only valid (non-empty kor) parts */
   const validBlend = (L.breakdown||[]).filter(b=>b.kor);
-  document.getElementById('pb-blend-kr').textContent   = validBlend.map(b=>b.kor).join('-');
+  const blendKr = validBlend.map(b=>b.kor).join(' + ');
+  document.getElementById('pb-blend-kr').textContent    = blendKr;
   document.getElementById('pb-blend-final').textContent = L.wKor;
 }
 
@@ -1096,10 +1129,10 @@ function resumeLesson(){
   goStep(step);
 }
 
-/* Skip = mark done + advance */
+/* Skip = mark done + show reward (so child always gets sticker) */
 function skipLesson(){
   markDone();
-  advance(false);
+  showReward();
 }
 
 /* Finish = called from game "잘했어" button */
@@ -1172,25 +1205,27 @@ function hasNextLesson(){
 }
 
 function continueLesson(){
-  /* move to next letter or next week */
+  /* move to next letter within this week */
   const wkLetters = WEEKS[ST.wkIdx].letters;
-  if(ST.ltIdx+1 < wkLetters.length){
+  if(ST.ltIdx + 1 < wkLetters.length){
     ST.ltIdx++; ST.step='s-sound'; save();
     fillLesson(curLesson());
     goStep('s-sound');
     setTimeout(playSound,500);
   } else {
+    /* this week is done — move to next week or complete */
     moveToNextWeek();
   }
 }
 
 function moveToNextWeek(){
-  if(ST.wkIdx+1 < TOTAL_WEEKS){
+  if(ST.wkIdx + 1 < TOTAL_WEEKS){
     ST.wkIdx++; ST.ltIdx=0; ST.step='s-sound'; save();
-    buildHome(); show('s-home');
+    buildHome();
+    show('s-home');
     hideLessonChrome();
   } else {
-    /* All complete! */
+    /* All 12 weeks done */
     show('s-complete');
     hideLessonChrome();
   }
@@ -1198,10 +1233,10 @@ function moveToNextWeek(){
 
 function restartLesson(){
   /* Restart the current week from letter 0 */
-  ST.ltIdx=0; ST.step='s-sound'; save();
+  ST.ltIdx = 0; ST.step = 's-sound'; save();
   fillLesson(curLesson());
   goStep('s-sound');
-  setTimeout(playSound,500);
+  setTimeout(playSound, 500);
 }
 
 function hideLessonChrome(){
@@ -1218,7 +1253,10 @@ function resetAll(){
    GAME
 ════════════════════════════════════════ */
 function buildGame(L){
-  document.getElementById('gq-letter').textContent = L.lt;
+  /* Question: for letter lessons show IPA e.g. "/b/ 소리로 시작하는 건?",
+     for word lessons show the word e.g. "cat 이랑 같은 소리?" */
+  const qEl = document.getElementById('gq-letter');
+  qEl.textContent = L.ipa ? L.ipa : L.word;
   document.getElementById('game-next').disabled = true;
   /* options: L + 3 random others */
   const others = PHONICS.filter(p=>p.lt!==L.lt).sort(()=>Math.random()-.5).slice(0,3);
@@ -1368,8 +1406,7 @@ function buildRoadmap(){
         const d=ST.done.includes(lk), c=cur&&lk===WEEKS[ST.wkIdx]?.letters[ST.ltIdx];
         const chip=document.createElement('div');
         chip.className='rm-chip '+(d?'done':c?'cur':'lock');
-        chip.textContent=L.emoji;
-        chip.title=L.isWord?L.word:lk;
+        chip.innerHTML=`<span class="rc-emo">${d?'✅':L.emoji}</span><span class="rc-lbl">${L.isWord?L.word:lk}</span>`;
         chips.appendChild(chip);
       });
       const st=document.createElement('div');

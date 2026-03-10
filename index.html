@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; script-src 'unsafe-inline';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com https://upload.wikimedia.org; media-src https://upload.wikimedia.org; script-src 'unsafe-inline';">
 <title>소리 놀이 🦊</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -316,13 +316,13 @@ body::before{
    SCREEN: SOUND
 ══════════════════════════════════════ */
 .letter-card{
-  width:168px;height:168px;
+  width:200px;height:200px;
   border-radius:var(--r-xl);
   display:flex;align-items:center;justify-content:center;flex-direction:column;
   background:linear-gradient(145deg,var(--ca) 0%,color-mix(in srgb,var(--ca) 70%,#000) 100%);
   box-shadow:var(--glow),var(--shadow);
   border:1px solid rgba(255,255,255,.15);
-  margin-bottom:20px;
+  margin-bottom:14px;
   position:relative;overflow:hidden;
 }
 .letter-card::after{
@@ -331,17 +331,31 @@ body::before{
   border-radius:inherit;pointer-events:none;
 }
 .lc-letter{
-  font-family:var(--font-h);font-size:88px;font-weight:700;
+  font-family:var(--font-h);font-size:96px;font-weight:700;
   color:#fff;line-height:1;text-shadow:0 4px 20px rgba(0,0,0,.4);
 }
 .lc-phonics{
-  font-size:17px;font-weight:700;color:rgba(255,255,255,.8);
+  font-size:15px;font-weight:700;color:rgba(255,255,255,.75);
   font-style:italic;letter-spacing:.5px;margin-top:2px;
 }
-.lc-kor{
-  font-size:14px;color:rgba(255,255,255,.65);font-weight:600;
-  margin-top:12px;letter-spacing:.3px;
+/* 알파벳 이름/파닉스 한글 뱃지 행 */
+.lc-badge-row{
+  display:flex;align-items:center;gap:10px;margin-bottom:10px;
 }
+.lc-badge{
+  padding:6px 16px;border-radius:var(--r-full);
+  font-size:15px;font-weight:700;letter-spacing:.3px;
+  backdrop-filter:blur(10px);
+}
+.lc-badge-name{
+  background:rgba(124,106,247,.25);border:1px solid rgba(124,106,247,.5);
+  color:var(--violet-l,#a89ef8);
+}
+.lc-badge-phonics{
+  background:rgba(255,107,107,.2);border:1px solid rgba(255,107,107,.45);
+  color:#ff9f9f;
+}
+.lc-badge-sep{color:var(--text-dim);font-size:13px;font-weight:700;}
 .play-pill{
   display:flex;align-items:center;gap:8px;
   padding:12px 24px;
@@ -360,37 +374,52 @@ body::before{
 @keyframes pulse-pill{0%,100%{opacity:1;}50%{opacity:.65;};}
 
 /* ══════════════════════════════════════
-   SCREEN: IMAGE
+   SCREEN: IMAGE (플래시카드)
 ══════════════════════════════════════ */
-.image-card{
-  width:170px;height:170px;
+.flashcard{
+  width:240px;height:200px;
   border-radius:var(--r-xl);
-  display:flex;align-items:center;justify-content:center;
-  background:linear-gradient(145deg,var(--ca) 0%,color-mix(in srgb,var(--ca) 70%,#000) 100%);
+  overflow:hidden;
   box-shadow:var(--glow),var(--shadow);
   border:1px solid rgba(255,255,255,.15);
-  font-size:88px;
-  margin-bottom:20px;
-  position:relative;overflow:hidden;
+  margin-bottom:14px;
+  position:relative;
+  background:linear-gradient(145deg,var(--ca) 0%,color-mix(in srgb,var(--ca) 70%,#000) 100%);
+  display:flex;align-items:center;justify-content:center;
 }
-.image-card::after{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(145deg,rgba(255,255,255,.15) 0%,transparent 60%);
-  pointer-events:none;
+.flashcard-img{
+  width:100%;height:100%;object-fit:cover;
+  position:absolute;inset:0;
+  border-radius:inherit;
+  transition:opacity .4s;
 }
-.img-word{
-  font-family:var(--font-h);font-size:34px;font-weight:700;
-  color:var(--text);letter-spacing:1px;margin-bottom:4px;
+.flashcard-emoji-fallback{
+  font-size:90px;position:relative;z-index:1;
 }
-.img-kor{
-  font-size:18px;color:var(--text-muted);font-weight:700;margin-bottom:12px;
+.flashcard-overlay{
+  position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(transparent, rgba(0,0,0,.7));
+  padding:16px 12px 10px;
+  display:flex;align-items:flex-end;justify-content:space-between;
+  z-index:2;
 }
+.flashcard-word{
+  font-family:var(--font-h);font-size:26px;font-weight:700;
+  color:#fff;line-height:1.1;text-shadow:0 2px 8px rgba(0,0,0,.6);
+}
+.flashcard-kor{
+  font-size:14px;font-weight:700;color:rgba(255,255,255,.8);
+  text-shadow:0 1px 4px rgba(0,0,0,.5);
+}
+.img-word{ display:none; }
+.img-kor{ display:none; }
 .img-guide-pill{
   padding:8px 18px;
   background:var(--glass);border:1px solid var(--border-b);
   border-radius:var(--r-full);
-  font-size:13px;color:var(--text-muted);font-weight:700;
+  font-size:14px;color:var(--text-muted);font-weight:700;
   letter-spacing:.3px;backdrop-filter:blur(10px);
+  margin-bottom:8px;
 }
 
 /* ══════════════════════════════════════
@@ -887,12 +916,17 @@ body::before{
 
   <!-- ══════════ SOUND ══════════ -->
   <div id="s-sound" class="screen">
-    <div class="lesson-content">
+    <div class="lesson-content" style="display:flex;flex-direction:column;align-items:center;justify-content:center;">
       <div class="letter-card si" id="lc-card">
         <span class="lc-letter" id="lc-letter">B</span>
         <span class="lc-phonics" id="lc-phonics">/b/</span>
       </div>
-      <span class="lc-kor" id="lc-kor">buh · buh · buh</span>
+      <!-- 에이 / 에 뱃지 -->
+      <div class="lc-badge-row" id="lc-badge-row">
+        <span class="lc-badge lc-badge-name" id="lc-badge-name">비</span>
+        <span class="lc-badge-sep">/</span>
+        <span class="lc-badge lc-badge-phonics" id="lc-badge-phonics">브</span>
+      </div>
       <button class="play-pill" id="play-btn-sound" onclick="onPlayPill('sound')">
         <span class="play-icon">🔊</span>
         <span class="play-txt">소리 듣기</span>
@@ -904,16 +938,23 @@ body::before{
     </div>
   </div>
 
-  <!-- ══════════ IMAGE ══════════ -->
+  <!-- ══════════ IMAGE (플래시카드) ══════════ -->
   <div id="s-image" class="screen">
-    <div class="lesson-content">
-      <div class="image-card si" id="ic-card">
-        <span id="ic-emoji">⚽</span>
+    <div class="lesson-content" style="display:flex;flex-direction:column;align-items:center;justify-content:center;">
+      <!-- 플래시카드: 실제 이미지 + 오버레이 -->
+      <div class="flashcard si" id="ic-card">
+        <img class="flashcard-img" id="ic-img" src="" alt="" onerror="this.style.display='none'"/>
+        <span class="flashcard-emoji-fallback" id="ic-emoji">⚽</span>
+        <div class="flashcard-overlay">
+          <div>
+            <div class="flashcard-word" id="fc-word">ball</div>
+            <div class="flashcard-kor" id="fc-kor">볼</div>
+          </div>
+        </div>
       </div>
-      <p class="img-word fu" id="img-word" style="animation-delay:.1s">ball</p>
-      <p class="img-kor fu" id="img-kor" style="animation-delay:.18s">볼</p>
-      <div class="img-guide-pill fu" id="img-guide" style="animation-delay:.26s">볼</div>
-      <button class="play-pill" id="play-btn-image" onclick="onPlayPill('image')" style="margin-top:10px;">
+      <!-- 파닉스 힌트 -->
+      <div class="img-guide-pill fu" id="img-guide">볼</div>
+      <button class="play-pill" id="play-btn-image" onclick="onPlayPill('image')">
         <span class="play-icon">🔊</span>
         <span class="play-txt">소리 듣기</span>
       </button>
@@ -1077,52 +1118,54 @@ body::before{
    DATA
 ══════════════════════════════════════════════════════ */
 const PHONICS = [
+  /* kor = 알파벳 이름 한글 (에이/비/씨…)
+     phonics = 파닉스 소리 한글 (에/브/크…) — 발음기호표 기준 */
   /* Month 1 — Wk1 */
-  {lt:'B',ipa:'/b/',kor:'buh',word:'ball',  wKor:'볼',  guide:'볼',  emoji:'⚽', breakdown:[{lt:'B',  ipa:'/b/',  kor:'ㅂ', sound:'buh'},{lt:'ALL', ipa:'/ɔːl/',kor:'올', sound:'all'}]},
-  {lt:'M',ipa:'/m/',kor:'muh',word:'moon',  wKor:'문',  guide:'문',  emoji:'🌙', breakdown:[{lt:'M',  ipa:'/m/',  kor:'ㅁ', sound:'muh'},{lt:'OON', ipa:'/uːn/',kor:'운', sound:'oon'}]},
-  {lt:'S',ipa:'/s/',kor:'suh',word:'sun',   wKor:'선',  guide:'선',  emoji:'☀️', breakdown:[{lt:'S',  ipa:'/s/',  kor:'ㅅ', sound:'suh'},{lt:'UN',  ipa:'/ʌn/', kor:'언', sound:'un'}]},
+  {lt:'B',ipa:'/b/',kor:'비',  phonics:'브', word:'ball',  wKor:'볼',   emoji:'⚽', img:'https://images.unsplash.com/photo-1575361204480-aadea25e6e68?w=300&q=80', breakdown:[{lt:'B',  ipa:'/b/',  kor:'ㅂ', sound:'buh'},{lt:'ALL', ipa:'/ɔːl/',kor:'올', sound:'all'}]},
+  {lt:'M',ipa:'/m/',kor:'엠',  phonics:'므', word:'moon',  wKor:'문',   emoji:'🌙', img:'https://images.unsplash.com/photo-1532693322450-2cb5c511067d?w=300&q=80', breakdown:[{lt:'M',  ipa:'/m/',  kor:'ㅁ', sound:'muh'},{lt:'OON', ipa:'/uːn/',kor:'운', sound:'oon'}]},
+  {lt:'S',ipa:'/s/',kor:'에스',phonics:'스', word:'sun',   wKor:'선',   emoji:'☀️', img:'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&q=80', breakdown:[{lt:'S',  ipa:'/s/',  kor:'ㅅ', sound:'suh'},{lt:'UN',  ipa:'/ʌn/', kor:'언', sound:'un'}]},
   /* Month 1 — Wk2 */
-  {lt:'A',ipa:'/æ/',kor:'ah', word:'apple', wKor:'애플',guide:'애',  emoji:'🍎', breakdown:[{lt:'A',  ipa:'/æ/', kor:'애', sound:'ah'}, {lt:'PP',  ipa:'/p/',  kor:'ㅍ', sound:'puh'},{lt:'LE', ipa:'/əl/',kor:'을', sound:'ul'}]},
-  {lt:'C',ipa:'/k/',kor:'kuh',word:'cat',   wKor:'캣',  guide:'캣',  emoji:'🐱', breakdown:[{lt:'C',  ipa:'/k/',  kor:'크', sound:'kuh'},{lt:'A',   ipa:'/æ/', kor:'애', sound:'ah'}, {lt:'T',  ipa:'/t/',  kor:'트', sound:'tuh'}]},
-  {lt:'D',ipa:'/d/',kor:'duh',word:'dog',   wKor:'독',  guide:'독',  emoji:'🐶', breakdown:[{lt:'D',  ipa:'/d/',  kor:'드', sound:'duh'},{lt:'O',   ipa:'/ɒ/', kor:'오', sound:'ah'}, {lt:'G',  ipa:'/g/',  kor:'그', sound:'guh'}]},
+  {lt:'A',ipa:'/æ/',kor:'에이',phonics:'에', word:'apple', wKor:'애플', emoji:'🍎', img:'https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?w=300&q=80', breakdown:[{lt:'A',  ipa:'/æ/', kor:'애', sound:'ah'},{lt:'PP', ipa:'/p/',  kor:'ㅍ', sound:'puh'},{lt:'LE',ipa:'/əl/',kor:'을',sound:'ul'}]},
+  {lt:'C',ipa:'/k/',kor:'씨',  phonics:'크', word:'cat',   wKor:'캣',   emoji:'🐱', img:'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=300&q=80', breakdown:[{lt:'C',  ipa:'/k/',  kor:'크', sound:'kuh'},{lt:'A',  ipa:'/æ/', kor:'애', sound:'ah'},{lt:'T',ipa:'/t/',kor:'트',sound:'tuh'}]},
+  {lt:'D',ipa:'/d/',kor:'디',  phonics:'드', word:'dog',   wKor:'독',   emoji:'🐶', img:'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=300&q=80', breakdown:[{lt:'D',  ipa:'/d/',  kor:'드', sound:'duh'},{lt:'O',  ipa:'/ɒ/', kor:'오', sound:'ah'},{lt:'G',ipa:'/g/',kor:'그',sound:'guh'}]},
   /* Month 1 — Wk3 */
-  {lt:'P',ipa:'/p/',kor:'puh',word:'pig',   wKor:'픽',  guide:'픽',  emoji:'🐷', breakdown:[{lt:'P',  ipa:'/p/',  kor:'ㅍ', sound:'puh'},{lt:'I',   ipa:'/ɪ/', kor:'이', sound:'ih'}, {lt:'G',  ipa:'/g/',  kor:'그', sound:'guh'}]},
-  {lt:'T',ipa:'/t/',kor:'tuh',word:'toy',   wKor:'토이',guide:'토이',emoji:'🧸', breakdown:[{lt:'T',  ipa:'/t/',  kor:'트', sound:'tuh'},{lt:'OY',  ipa:'/ɔɪ/',kor:'오이',sound:'oy'}]},
-  {lt:'H',ipa:'/h/',kor:'huh',word:'hat',   wKor:'햇',  guide:'햇',  emoji:'🎩', breakdown:[{lt:'H',  ipa:'/h/',  kor:'ㅎ', sound:'huh'},{lt:'A',   ipa:'/æ/', kor:'애', sound:'ah'}, {lt:'T',  ipa:'/t/',  kor:'트', sound:'tuh'}]},
+  {lt:'P',ipa:'/p/',kor:'피',  phonics:'프', word:'pig',   wKor:'픽',   emoji:'🐷', img:'https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=300&q=80', breakdown:[{lt:'P',  ipa:'/p/',  kor:'ㅍ', sound:'puh'},{lt:'I',  ipa:'/ɪ/', kor:'이', sound:'ih'},{lt:'G',ipa:'/g/',kor:'그',sound:'guh'}]},
+  {lt:'T',ipa:'/t/',kor:'티',  phonics:'트', word:'toy',   wKor:'토이',  emoji:'🧸', img:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&q=80', breakdown:[{lt:'T',  ipa:'/t/',  kor:'트', sound:'tuh'},{lt:'OY', ipa:'/ɔɪ/',kor:'오이',sound:'oy'}]},
+  {lt:'H',ipa:'/h/',kor:'에이치',phonics:'흐',word:'hat',  wKor:'햇',   emoji:'🎩', img:'https://images.unsplash.com/photo-1521369909029-2afed882baee?w=300&q=80', breakdown:[{lt:'H',  ipa:'/h/',  kor:'ㅎ', sound:'huh'},{lt:'A',  ipa:'/æ/', kor:'애', sound:'ah'},{lt:'T',ipa:'/t/',kor:'트',sound:'tuh'}]},
   /* Month 1 — Wk4 */
-  {lt:'N',ipa:'/n/',kor:'nuh',word:'nose',  wKor:'노우즈',guide:'노우즈',emoji:'👃',breakdown:[{lt:'N',  ipa:'/n/',  kor:'ㄴ', sound:'nuh'},{lt:'O',   ipa:'/əʊ/',kor:'오우',sound:'oh'},{lt:'SE', ipa:'/z/',  kor:'즈', sound:'z'}]},
-  {lt:'F',ipa:'/f/',kor:'fuh',word:'fish',  wKor:'피쉬',guide:'피쉬',emoji:'🐟', breakdown:[{lt:'F',  ipa:'/f/',  kor:'ㅍ', sound:'fuh'},{lt:'I',   ipa:'/ɪ/', kor:'이', sound:'ih'}, {lt:'SH', ipa:'/ʃ/',  kor:'쉬', sound:'sh'}]},
-  {lt:'G',ipa:'/g/',kor:'guh',word:'goat',  wKor:'고우트',guide:'고우트',emoji:'🐐',breakdown:[{lt:'G',  ipa:'/g/',  kor:'그', sound:'guh'},{lt:'OA',  ipa:'/əʊ/',kor:'오우',sound:'oh'},{lt:'T',  ipa:'/t/',  kor:'트', sound:'tuh'}]},
+  {lt:'N',ipa:'/n/',kor:'엔',  phonics:'느', word:'nose',  wKor:'노우즈',emoji:'👃', img:'https://images.unsplash.com/photo-1612817288484-6f916006741a?w=300&q=80', breakdown:[{lt:'N',  ipa:'/n/',  kor:'ㄴ', sound:'nuh'},{lt:'O',  ipa:'/əʊ/',kor:'오우',sound:'oh'},{lt:'SE',ipa:'/z/',kor:'즈',sound:'z'}]},
+  {lt:'F',ipa:'/f/',kor:'에프',phonics:'프', word:'fish',  wKor:'피쉬', emoji:'🐟', img:'https://images.unsplash.com/photo-1524704654690-b56c05c78a00?w=300&q=80', breakdown:[{lt:'F',  ipa:'/f/',  kor:'ㅍ', sound:'fuh'},{lt:'I',  ipa:'/ɪ/', kor:'이', sound:'ih'},{lt:'SH',ipa:'/ʃ/',kor:'쉬',sound:'sh'}]},
+  {lt:'G',ipa:'/g/',kor:'쥐',  phonics:'그', word:'goat',  wKor:'고우트',emoji:'🐐', img:'https://images.unsplash.com/photo-1551196090-cac1dfca9cd2?w=300&q=80', breakdown:[{lt:'G',  ipa:'/g/',  kor:'그', sound:'guh'},{lt:'OA', ipa:'/əʊ/',kor:'오우',sound:'oh'},{lt:'T',ipa:'/t/',kor:'트',sound:'tuh'}]},
   /* Month 2 — Wk5 */
-  {lt:'L',ipa:'/l/',kor:'luh',word:'lion',  wKor:'라이언',guide:'라이언',emoji:'🦁',breakdown:[{lt:'L',  ipa:'/l/',  kor:'ㄹ', sound:'luh'},{lt:'I',   ipa:'/aɪ/',kor:'아이',sound:'eye'},{lt:'ON', ipa:'/ən/', kor:'언', sound:'un'}]},
-  {lt:'R',ipa:'/r/',kor:'ruh',word:'rabbit',wKor:'래빗',guide:'래빗',emoji:'🐰', breakdown:[{lt:'R',  ipa:'/r/',  kor:'ㄹ', sound:'ruh'},{lt:'A',   ipa:'/æ/', kor:'애', sound:'ah'}, {lt:'BBIT',ipa:'/bɪt/',kor:'빗',sound:'bit'}]},
-  {lt:'K',ipa:'/k/',kor:'kuh',word:'kite',  wKor:'카이트',guide:'카이트',emoji:'🪁',breakdown:[{lt:'K',  ipa:'/k/',  kor:'크', sound:'kuh'},{lt:'I',   ipa:'/aɪ/',kor:'아이',sound:'eye'},{lt:'TE', ipa:'/t/',  kor:'트', sound:'t'}]},
+  {lt:'L',ipa:'/l/',kor:'엘',  phonics:'르', word:'lion',  wKor:'라이언',emoji:'🦁', img:'https://images.unsplash.com/photo-1546182990-dffeafbe841d?w=300&q=80', breakdown:[{lt:'L',  ipa:'/l/',  kor:'ㄹ', sound:'luh'},{lt:'I',  ipa:'/aɪ/',kor:'아이',sound:'eye'},{lt:'ON',ipa:'/ən/',kor:'언',sound:'un'}]},
+  {lt:'R',ipa:'/r/',kor:'알',  phonics:'르', word:'rabbit',wKor:'래빗', emoji:'🐰', img:'https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=300&q=80', breakdown:[{lt:'R',  ipa:'/r/',  kor:'ㄹ', sound:'ruh'},{lt:'A',  ipa:'/æ/', kor:'애', sound:'ah'},{lt:'BBIT',ipa:'/bɪt/',kor:'빗',sound:'bit'}]},
+  {lt:'K',ipa:'/k/',kor:'케이',phonics:'크', word:'kite',  wKor:'카이트',emoji:'🪁', img:'https://images.unsplash.com/photo-1606041008023-472dfb5e530f?w=300&q=80', breakdown:[{lt:'K',  ipa:'/k/',  kor:'크', sound:'kuh'},{lt:'I',  ipa:'/aɪ/',kor:'아이',sound:'eye'},{lt:'TE',ipa:'/t/',kor:'트',sound:'t'}]},
   /* Month 2 — Wk6 */
-  {lt:'E',ipa:'/ɛ/',kor:'eh', word:'egg',   wKor:'에그', guide:'에그', emoji:'🥚', breakdown:[{lt:'E',  ipa:'/ɛ/', kor:'에', sound:'eh'}, {lt:'GG',  ipa:'/g/',  kor:'그', sound:'guh'}]},
-  {lt:'I',ipa:'/ɪ/',kor:'ih', word:'igloo', wKor:'이글루',guide:'이글루',emoji:'🏔️',breakdown:[{lt:'I',  ipa:'/ɪ/', kor:'이', sound:'ih'}, {lt:'GLOO',ipa:'/gluː/',kor:'글루',sound:'gloo'}]},
-  {lt:'O',ipa:'/ɒ/',kor:'ah', word:'octopus',wKor:'옥토퍼스',guide:'옥토퍼스',emoji:'🐙',breakdown:[{lt:'O',  ipa:'/ɒ/', kor:'옥', sound:'ah'}, {lt:'CTO', ipa:'/ktə/',kor:'토', sound:'toe'},{lt:'PUS',ipa:'/pəs/',kor:'퍼스',sound:'pus'}]},
+  {lt:'E',ipa:'/ɛ/',kor:'이',  phonics:'에', word:'egg',   wKor:'에그', emoji:'🥚', img:'https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?w=300&q=80', breakdown:[{lt:'E',  ipa:'/ɛ/', kor:'에', sound:'eh'},{lt:'GG', ipa:'/g/',  kor:'그', sound:'guh'}]},
+  {lt:'I',ipa:'/ɪ/',kor:'아이',phonics:'이', word:'igloo', wKor:'이글루',emoji:'🏔️', img:'https://images.unsplash.com/photo-1484280849519-a72132d3182c?w=300&q=80', breakdown:[{lt:'I',  ipa:'/ɪ/', kor:'이', sound:'ih'},{lt:'GLOO',ipa:'/gluː/',kor:'글루',sound:'gloo'}]},
+  {lt:'O',ipa:'/ɒ/',kor:'오아',phonics:'오', word:'octopus',wKor:'옥토퍼스',emoji:'🐙',img:'https://images.unsplash.com/photo-1559816031-2a23e0e2c6a2?w=300&q=80', breakdown:[{lt:'O',  ipa:'/ɒ/', kor:'옥', sound:'ah'},{lt:'CTO',ipa:'/ktə/',kor:'토',sound:'toe'},{lt:'PUS',ipa:'/pəs/',kor:'퍼스',sound:'pus'}]},
   /* Month 2 — Wk7 */
-  {lt:'U',ipa:'/ʌ/',kor:'uh', word:'umbrella',wKor:'엄브렐라',guide:'엄브렐라',emoji:'☂️',breakdown:[{lt:'U',  ipa:'/ʌ/', kor:'엄', sound:'uh'}, {lt:'MBRELLA',ipa:'/brɛlə/',kor:'브렐라',sound:'brella'}]},
-  {lt:'W',ipa:'/w/',kor:'wuh',word:'water', wKor:'워터', guide:'워터', emoji:'💧', breakdown:[{lt:'W',  ipa:'/w/',  kor:'워', sound:'wuh'},{lt:'A',   ipa:'/ɔː/', kor:'어', sound:'ah'}, {lt:'TER',ipa:'/tər/',kor:'터', sound:'ter'}]},
-  {lt:'Y',ipa:'/j/',kor:'yuh',word:'yellow',wKor:'옐로우',guide:'옐로우',emoji:'🌻',breakdown:[{lt:'Y',  ipa:'/j/',  kor:'예', sound:'yuh'},{lt:'ELLOW',ipa:'/ɛləʊ/',kor:'엘로우',sound:'ellow'}]},
+  {lt:'U',ipa:'/ʌ/',kor:'유',  phonics:'어', word:'umbrella',wKor:'엄브렐라',emoji:'☂️',img:'https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=300&q=80', breakdown:[{lt:'U',  ipa:'/ʌ/', kor:'엄', sound:'uh'},{lt:'MBRELLA',ipa:'/brɛlə/',kor:'브렐라',sound:'brella'}]},
+  {lt:'W',ipa:'/w/',kor:'더블유',phonics:'우',word:'water', wKor:'워터', emoji:'💧', img:'https://images.unsplash.com/photo-1548438294-1ad5d5f4f063?w=300&q=80', breakdown:[{lt:'W',  ipa:'/w/',  kor:'워', sound:'wuh'},{lt:'A',  ipa:'/ɔː/', kor:'어', sound:'ah'},{lt:'TER',ipa:'/tər/',kor:'터',sound:'ter'}]},
+  {lt:'Y',ipa:'/j/',kor:'와이',phonics:'이', word:'yellow',wKor:'옐로우',emoji:'🌻', img:'https://images.unsplash.com/photo-1597848212624-a19eb35e2651?w=300&q=80', breakdown:[{lt:'Y',  ipa:'/j/',  kor:'예', sound:'yuh'},{lt:'ELLOW',ipa:'/ɛləʊ/',kor:'엘로우',sound:'ellow'}]},
   /* Month 2 — Wk8 */
-  {lt:'Z',ipa:'/z/',kor:'zuh',word:'zebra', wKor:'지브라',guide:'지브라',emoji:'🦓', breakdown:[{lt:'Z',  ipa:'/z/',  kor:'지', sound:'zuh'},{lt:'EBRA', ipa:'/iːbrə/',kor:'브라', sound:'ebra'}]},
-  {lt:'V',ipa:'/v/',kor:'vuh',word:'van',   wKor:'밴',  guide:'밴',   emoji:'🚐', breakdown:[{lt:'V',  ipa:'/v/',  kor:'ㅂ', sound:'vuh'},{lt:'A',   ipa:'/æ/', kor:'애', sound:'ah'}, {lt:'N',  ipa:'/n/',  kor:'ㄴ', sound:'nuh'}]},
-  {lt:'J',ipa:'/dʒ/',kor:'juh',word:'jam',  wKor:'잼',  guide:'잼',   emoji:'🍓', breakdown:[{lt:'J',  ipa:'/dʒ/',kor:'쥐', sound:'juh'},{lt:'A',   ipa:'/æ/', kor:'애', sound:'ah'}, {lt:'M',  ipa:'/m/',  kor:'ㅁ', sound:'muh'}]},
+  {lt:'Z',ipa:'/z/',kor:'지',  phonics:'즈', word:'zebra', wKor:'지브라',emoji:'🦓', img:'https://images.unsplash.com/photo-1501706362039-c06b2d715385?w=300&q=80', breakdown:[{lt:'Z',  ipa:'/z/',  kor:'지', sound:'zuh'},{lt:'EBRA',ipa:'/iːbrə/',kor:'브라',sound:'ebra'}]},
+  {lt:'V',ipa:'/v/',kor:'브이',phonics:'브', word:'van',   wKor:'밴',   emoji:'🚐', img:'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=300&q=80', breakdown:[{lt:'V',  ipa:'/v/',  kor:'ㅂ', sound:'vuh'},{lt:'A',  ipa:'/æ/', kor:'애', sound:'ah'},{lt:'N',ipa:'/n/',kor:'ㄴ',sound:'nuh'}]},
+  {lt:'J',ipa:'/dʒ/',kor:'제이',phonics:'즈',word:'jam',  wKor:'잼',   emoji:'🍓', img:'https://images.unsplash.com/photo-1597528380424-e84f57f0db7c?w=300&q=80', breakdown:[{lt:'J',  ipa:'/dʒ/',kor:'쥐', sound:'juh'},{lt:'A',  ipa:'/æ/', kor:'애', sound:'ah'},{lt:'M',ipa:'/m/',kor:'ㅁ',sound:'muh'}]},
   /* Month 3 — Wk9 */
-  {lt:'CAT', ipa:'',kor:'',word:'cat',  wKor:'캣',  guide:'크-애-트',emoji:'🐱',isWord:true,breakdown:[{lt:'C',ipa:'/k/',kor:'크',sound:'kuh'},{lt:'A',ipa:'/æ/',kor:'애',sound:'ah'},{lt:'T',ipa:'/t/',kor:'트',sound:'tuh'}]},
-  {lt:'BALL',ipa:'',kor:'',word:'ball', wKor:'볼',  guide:'ㅂ-올',  emoji:'⚽',isWord:true,breakdown:[{lt:'B',ipa:'/b/',kor:'ㅂ',sound:'buh'},{lt:'ALL',ipa:'/ɔːl/',kor:'올',sound:'all'}]},
-  {lt:'SUN', ipa:'',kor:'',word:'sun',  wKor:'선',  guide:'ㅅ-언',  emoji:'☀️',isWord:true,breakdown:[{lt:'S',ipa:'/s/',kor:'ㅅ',sound:'suh'},{lt:'UN',ipa:'/ʌn/',kor:'언',sound:'un'}]},
+  {lt:'CAT', ipa:'',kor:'캣', phonics:'크-애-트',word:'cat',  wKor:'캣',  emoji:'🐱',img:'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=300&q=80',isWord:true,breakdown:[{lt:'C',ipa:'/k/',kor:'크',sound:'kuh'},{lt:'A',ipa:'/æ/',kor:'애',sound:'ah'},{lt:'T',ipa:'/t/',kor:'트',sound:'tuh'}]},
+  {lt:'BALL',ipa:'',kor:'볼',  phonics:'브-올',  word:'ball', wKor:'볼',  emoji:'⚽',img:'https://images.unsplash.com/photo-1575361204480-aadea25e6e68?w=300&q=80',isWord:true,breakdown:[{lt:'B',ipa:'/b/',kor:'ㅂ',sound:'buh'},{lt:'ALL',ipa:'/ɔːl/',kor:'올',sound:'all'}]},
+  {lt:'SUN', ipa:'',kor:'선',  phonics:'스-언',  word:'sun',  wKor:'선',  emoji:'☀️',img:'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&q=80',isWord:true,breakdown:[{lt:'S',ipa:'/s/',kor:'ㅅ',sound:'suh'},{lt:'UN',ipa:'/ʌn/',kor:'언',sound:'un'}]},
   /* Month 3 — Wk10 */
-  {lt:'DOG', ipa:'',kor:'',word:'dog',  wKor:'독',  guide:'드-오-그',emoji:'🐶',isWord:true,breakdown:[{lt:'D',ipa:'/d/',kor:'드',sound:'duh'},{lt:'O',ipa:'/ɒ/',kor:'오',sound:'ah'},{lt:'G',ipa:'/g/',kor:'그',sound:'guh'}]},
-  {lt:'PIG', ipa:'',kor:'',word:'pig',  wKor:'픽',  guide:'ㅍ-이-그',emoji:'🐷',isWord:true,breakdown:[{lt:'P',ipa:'/p/',kor:'ㅍ',sound:'puh'},{lt:'I',ipa:'/ɪ/',kor:'이',sound:'ih'},{lt:'G',ipa:'/g/',kor:'그',sound:'guh'}]},
-  {lt:'HAT', ipa:'',kor:'',word:'hat',  wKor:'햇',  guide:'ㅎ-애-트',emoji:'🎩',isWord:true,breakdown:[{lt:'H',ipa:'/h/',kor:'ㅎ',sound:'huh'},{lt:'A',ipa:'/æ/',kor:'애',sound:'ah'},{lt:'T',ipa:'/t/',kor:'트',sound:'tuh'}]},
+  {lt:'DOG', ipa:'',kor:'독',  phonics:'드-오-그',word:'dog', wKor:'독',  emoji:'🐶',img:'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=300&q=80',isWord:true,breakdown:[{lt:'D',ipa:'/d/',kor:'드',sound:'duh'},{lt:'O',ipa:'/ɒ/',kor:'오',sound:'ah'},{lt:'G',ipa:'/g/',kor:'그',sound:'guh'}]},
+  {lt:'PIG', ipa:'',kor:'픽',  phonics:'프-이-그',word:'pig', wKor:'픽',  emoji:'🐷',img:'https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=300&q=80',isWord:true,breakdown:[{lt:'P',ipa:'/p/',kor:'ㅍ',sound:'puh'},{lt:'I',ipa:'/ɪ/',kor:'이',sound:'ih'},{lt:'G',ipa:'/g/',kor:'그',sound:'guh'}]},
+  {lt:'HAT', ipa:'',kor:'햇',  phonics:'흐-애-트',word:'hat', wKor:'햇',  emoji:'🎩',img:'https://images.unsplash.com/photo-1521369909029-2afed882baee?w=300&q=80',isWord:true,breakdown:[{lt:'H',ipa:'/h/',kor:'ㅎ',sound:'huh'},{lt:'A',ipa:'/æ/',kor:'애',sound:'ah'},{lt:'T',ipa:'/t/',kor:'트',sound:'tuh'}]},
   /* Month 3 — Wk11 */
-  {lt:'MOON',ipa:'',kor:'',word:'moon', wKor:'문',  guide:'ㅁ-운',  emoji:'🌙',isWord:true,breakdown:[{lt:'M',ipa:'/m/',kor:'ㅁ',sound:'muh'},{lt:'OON',ipa:'/uːn/',kor:'운',sound:'oon'}]},
-  {lt:'FISH',ipa:'',kor:'',word:'fish', wKor:'피쉬',guide:'ㅍ-이-쉬',emoji:'🐟',isWord:true,breakdown:[{lt:'F',ipa:'/f/',kor:'ㅍ',sound:'fuh'},{lt:'I',ipa:'/ɪ/',kor:'이',sound:'ih'},{lt:'SH',ipa:'/ʃ/',kor:'쉬',sound:'sh'}]},
-  {lt:'APPLE',ipa:'',kor:'',word:'apple',wKor:'애플',guide:'애-ㅍ-을',emoji:'🍎',isWord:true,breakdown:[{lt:'A',ipa:'/æ/',kor:'애',sound:'ah'},{lt:'PP',ipa:'/p/',kor:'ㅍ',sound:'puh'},{lt:'LE',ipa:'/əl/',kor:'을',sound:'ul'}]},
+  {lt:'MOON',ipa:'',kor:'문',  phonics:'므-운',  word:'moon', wKor:'문',  emoji:'🌙',img:'https://images.unsplash.com/photo-1532693322450-2cb5c511067d?w=300&q=80',isWord:true,breakdown:[{lt:'M',ipa:'/m/',kor:'ㅁ',sound:'muh'},{lt:'OON',ipa:'/uːn/',kor:'운',sound:'oon'}]},
+  {lt:'FISH',ipa:'',kor:'피쉬',phonics:'프-이-쉬',word:'fish',wKor:'피쉬',emoji:'🐟',img:'https://images.unsplash.com/photo-1524704654690-b56c05c78a00?w=300&q=80',isWord:true,breakdown:[{lt:'F',ipa:'/f/',kor:'ㅍ',sound:'fuh'},{lt:'I',ipa:'/ɪ/',kor:'이',sound:'ih'},{lt:'SH',ipa:'/ʃ/',kor:'쉬',sound:'sh'}]},
+  {lt:'APPLE',ipa:'',kor:'애플',phonics:'애-프-을',word:'apple',wKor:'애플',emoji:'🍎',img:'https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?w=300&q=80',isWord:true,breakdown:[{lt:'A',ipa:'/æ/',kor:'애',sound:'ah'},{lt:'PP',ipa:'/p/',kor:'ㅍ',sound:'puh'},{lt:'LE',ipa:'/əl/',kor:'을',sound:'ul'}]},
   /* Month 3 — Wk12 */
-  {lt:'REVIEW',ipa:'',kor:'',word:'review',wKor:'복습',guide:'다시 배워요!',emoji:'🔄',isReview:true,breakdown:[]},
+  {lt:'REVIEW',ipa:'',kor:'복습',phonics:'',word:'review',wKor:'복습',emoji:'🔄',img:'',isReview:true,breakdown:[]},
 ];
 
 const MONTHS = [
@@ -1267,40 +1310,74 @@ function applyColor(el, lt) {
 const ttsOK = 'speechSynthesis' in window;
 let _voices = [];
 
-/* ─── 알파벳 이름: 모바일 TTS가 확실하게 읽도록
-   짧은 단어/단일문자는 TTS가 오독하므로
-   "the letter ___" 형식으로 넘겨 정확한 발음 유도 ─── */
-const alphabetNameMap = {
-  A:'the letter A, ay',
-  B:'the letter B, bee',
-  C:'the letter C, see',
-  D:'the letter D, dee',
-  E:'the letter E, ee',
-  F:'the letter F, ef',
-  G:'the letter G, jee',
-  H:'the letter H, aitch',
-  I:'the letter I, eye',
-  J:'the letter J, jay',
-  K:'the letter K, kay',
-  L:'the letter L, el',
-  M:'the letter M, em',
-  N:'the letter N, en',
-  O:'the letter O, oh',
-  P:'the letter P, pee',
-  Q:'the letter Q, cue',
-  R:'the letter R, ar',
-  S:'the letter S, ess',
-  T:'the letter T, tee',
-  U:'the letter U, you',
-  V:'the letter V, vee',
-  W:'the letter W, double you',
-  X:'the letter X, ex',
-  Y:'the letter Y, why',
-  Z:'the letter Z, zee',
+/* ══════════════════════════════════════════════════════
+   AUDIO SYSTEM
+   알파벳 이름(에이~지): Wikimedia Commons 공개 MP3
+   단어/파닉스 발음: Web Speech API (TTS) 사용
+══════════════════════════════════════════════════════ */
+
+/* ── 알파벳 이름 MP3 맵 (Wikimedia Commons 공개 도메인) ──
+   각 파일: 원어민이 알파벳 이름을 명확히 발음한 녹음 */
+const ALPHA_MP3 = {
+  A: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/5/5c/En-us-a.ogg/En-us-a.ogg.mp3',
+  B: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/5/5b/En-us-b.ogg/En-us-b.ogg.mp3',
+  C: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/6/6b/En-us-c.ogg/En-us-c.ogg.mp3',
+  D: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/e/e3/En-us-d.ogg/En-us-d.ogg.mp3',
+  E: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/5/5e/En-us-e.ogg/En-us-e.ogg.mp3',
+  F: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/4/42/En-us-f.ogg/En-us-f.ogg.mp3',
+  G: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/b/b7/En-us-g.ogg/En-us-g.ogg.mp3',
+  H: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/7/71/En-us-h.ogg/En-us-h.ogg.mp3',
+  I: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/d/d0/En-us-i.ogg/En-us-i.ogg.mp3',
+  J: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/1/19/En-us-j.ogg/En-us-j.ogg.mp3',
+  K: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/4/41/En-us-k.ogg/En-us-k.ogg.mp3',
+  L: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/6/6e/En-us-l.ogg/En-us-l.ogg.mp3',
+  M: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/8/8f/En-us-m.ogg/En-us-m.ogg.mp3',
+  N: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/c/c7/En-us-n.ogg/En-us-n.ogg.mp3',
+  O: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/7/71/En-us-o.ogg/En-us-o.ogg.mp3',
+  P: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/4/48/En-us-p.ogg/En-us-p.ogg.mp3',
+  Q: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/f/fa/En-us-q.ogg/En-us-q.ogg.mp3',
+  R: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/7/70/En-us-r.ogg/En-us-r.ogg.mp3',
+  S: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/e/e3/En-us-s.ogg/En-us-s.ogg.mp3',
+  T: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/7/7f/En-us-t.ogg/En-us-t.ogg.mp3',
+  U: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/e/e6/En-us-u.ogg/En-us-u.ogg.mp3',
+  V: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/4/4c/En-us-v.ogg/En-us-v.ogg.mp3',
+  W: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/8/8e/En-us-w.ogg/En-us-w.ogg.mp3',
+  X: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/5/54/En-us-x.ogg/En-us-x.ogg.mp3',
+  Y: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/f/f1/En-us-y.ogg/En-us-y.ogg.mp3',
+  Z: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/b/b8/En-us-z.ogg/En-us-z.ogg.mp3',
 };
 
+/* Audio 캐시: 한 번 로드한 Audio 객체 재사용 */
+const _audioCache = {};
+
+/* MP3 재생 함수 — 실패 시 TTS fallback */
+function playMP3(url, cb) {
+  if (!url) { if (cb) cb(); return; }
+  try {
+    let audio = _audioCache[url];
+    if (!audio) {
+      audio = new Audio(url);
+      _audioCache[url] = audio;
+    }
+    audio.currentTime = 0;
+    audio.playbackRate = 0.9;  // 살짝 느리게 — 더 명확하게 들림
+    audio.onended  = () => { if (cb) cb(); };
+    audio.onerror  = () => {
+      // MP3 로드 실패 → TTS fallback
+      console.warn('MP3 load failed, falling back to TTS:', url);
+      if (cb) cb();
+    };
+    const p = audio.play();
+    if (p && typeof p.catch === 'function') {
+      p.catch(() => { if (cb) cb(); });
+    }
+  } catch (e) {
+    if (cb) cb();
+  }
+}
+
 /* ─── 파닉스 발음 소리 (buh, kuh, …) ───
-   s-phonics 쪼개기 화면에 사용 */
+   s-phonics 쪼개기 화면 — TTS 사용 (단어 단위라 TTS도 잘 읽음) */
 const phoneticMap = {
   B:'buh',  M:'muh',  S:'suh',  A:'ah',   C:'kuh',  D:'duh',
   P:'puh',  T:'tuh',  H:'huh',  N:'nuh',  F:'fuh',  G:'guh',
@@ -1319,17 +1396,17 @@ function _bestVoice() {
       || null;
 }
 
-/* 기본 speak — iOS Safari: setTimeout 80ms 래핑 필수 */
+/* TTS speak — 단어/파닉스용 */
 function speak(text, rate, cb) {
   rate = rate || 0.75;
   if (!ttsOK || !text) { if (cb) setTimeout(cb, 300); return; }
   window.speechSynthesis.cancel();
   setTimeout(() => {
     const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'en-US'; u.rate = rate; u.pitch = 1.1;
+    u.lang = 'en-US'; u.rate = rate; u.pitch = 1.05;
     const v = _bestVoice();
     if (v) u.voice = v;
-    u.onend  = () => { if (cb) cb(); };
+    u.onend   = () => { if (cb) cb(); };
     u.onerror = () => { if (cb) cb(); };
     window.speechSynthesis.speak(u);
   }, 80);
@@ -1346,77 +1423,69 @@ function speakSequence(texts, rate, gap, cb) {
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   화면별 TTS 함수
+   화면별 재생 함수
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-/* [s-sound] 알파벳 이름 발음: "B" → "the letter B, bee"
-   단어 레슨(Month3)에서는 단어 전체 발음 */
+/* [s-sound / s-repeat] 알파벳 이름: MP3 우선, 실패 시 TTS */
 function playAlphaName(L, cb) {
   if (!L) { if (cb) cb(); return; }
   if (L.isWord || L.isReview) {
     speak(L.word, 0.72, cb);
+    return;
+  }
+  const url = ALPHA_MP3[L.lt];
+  if (url) {
+    playMP3(url, cb);
   } else {
-    const name = alphabetNameMap[L.lt] || ('the letter ' + L.lt);
-    speak(name, 0.80, cb);  // 천천히 명확하게
+    // 단일 알파벳이 아닌 경우 TTS fallback
+    speak(L.lt, 0.80, cb);
   }
 }
 
-/* [s-image] 단어 발음: "ball" */
+/* [s-image] 단어 발음 — TTS */
 function playWordSound(L, cb) {
   if (!L) { if (cb) cb(); return; }
   const text = L.isReview ? 'review' : L.word;
   speak(text, 0.72, cb);
 }
 
-/* [s-phonics] 파닉스 쪼개기: breakdown 각 소리를 순서대로
-   b.sound 필드 우선 → 없으면 phoneticMap → 없으면 b.lt 그대로
-   마지막에 단어 전체 발음 */
+/* [s-phonics] 파닉스 쪼개기 — TTS (b.sound 필드 사용) */
 function playPhonicsBreakdown(L, cb) {
   if (!L) { if (cb) cb(); return; }
   if (!L.breakdown || L.breakdown.length === 0) {
     playWordSound(L, cb); return;
   }
   const sounds = L.breakdown.map(b => {
-    if (b.sound) return b.sound;                        // ← 새 sound 필드
+    if (b.sound) return b.sound;
     if (b.lt.length === 1 && phoneticMap[b.lt]) return phoneticMap[b.lt];
-    return b.lt.toLowerCase();                          // 최후 fallback
+    return b.lt.toLowerCase();
   });
-  sounds.push(L.word); // 마지막에 단어 전체
+  sounds.push(L.word);
   speakSequence(sounds, 0.65, 500, cb);
 }
 
-/* [s-repeat] 다시듣기: 알파벳 이름 발음 (s-sound 와 동일) */
+/* [s-repeat] 다시듣기 버튼 */
 function playRepeatSound() {
   const L = curLesson(); if (!L) return;
   playAlphaName(L);
 }
 
-/* ── 자동재생: 화면 진입 시 호출 ── */
-
-/* s-sound 진입 → 알파벳 이름 */
+/* ── 자동재생 ── */
 function autoPlaySound(L) {
   if (!L) return;
   setTimeout(() => playAlphaName(L), 500);
 }
-
-/* s-image 진입 → 단어 발음 */
 function autoPlayImage(L) {
   if (!L) return;
   setTimeout(() => playWordSound(L), 500);
 }
-
-/* s-phonics 진입 → 파닉스 쪼개기 */
 function autoPlayPhonics(L) {
   if (!L) return;
   setTimeout(() => playPhonicsBreakdown(L), 500);
 }
+function autoPlayLesson(L) { autoPlaySound(L); }
 
-/* startLesson / continueLesson 에서 사용 */
-function autoPlayLesson(L) {
-  autoPlaySound(L);
-}
-
-/* ── play-pill 버튼: 각 화면별 id로 구분 ── */
+/* ── play-pill 버튼 ── */
 function onPlayPill(screenId) {
   const L = curLesson(); if (!L) return;
   const btn = document.getElementById('play-btn-' + screenId);
@@ -1427,7 +1496,7 @@ function onPlayPill(screenId) {
     if (btn) btn.classList.remove('playing');
     if (txt) txt.textContent = '소리 듣기';
   };
-  if (screenId === 'sound')   playAlphaName(L, done);
+  if (screenId === 'sound')        playAlphaName(L, done);
   else if (screenId === 'image')   playWordSound(L, done);
   else if (screenId === 'phonics') playPhonicsBreakdown(L, done);
   else done();
@@ -1445,17 +1514,46 @@ function fillLesson(L) {
   applyColor(lcc, L.lt);
   document.getElementById('lc-letter').textContent  = L.lt;
   document.getElementById('lc-phonics').textContent = L.ipa || (L.isWord ? L.word : '');
-  document.getElementById('lc-kor').textContent     = L.kor
-    ? Array(3).fill(L.kor).join(' · ')
-    : (L.isWord ? L.guide : '');
+  // 에이 / 에  뱃지
+  const badgeRow = document.getElementById('lc-badge-row');
+  const badgeName    = document.getElementById('lc-badge-name');
+  const badgePhonics = document.getElementById('lc-badge-phonics');
+  if (L.isReview) {
+    badgeRow.style.display = 'none';
+  } else if (L.isWord) {
+    badgeRow.style.display = 'flex';
+    badgeName.textContent    = L.wKor;
+    badgePhonics.textContent = L.phonics || '';
+    if (!L.phonics) badgePhonics.style.display = 'none';
+    else badgePhonics.style.display = '';
+  } else {
+    badgeRow.style.display = 'flex';
+    badgeName.textContent    = L.kor;      // 알파벳 이름 한글 (비, 엠, 에스…)
+    badgePhonics.textContent = L.phonics;  // 파닉스 소리 한글 (브, 므, 스…)
+    badgePhonics.style.display = '';
+  }
 
-  /* ─ Image screen ─ */
+  /* ─ Image screen (플래시카드) ─ */
   const icc = document.getElementById('ic-card');
   applyColor(icc, L.lt);
-  document.getElementById('ic-emoji').textContent = L.emoji;
-  document.getElementById('img-word').textContent = L.word;
-  document.getElementById('img-kor').textContent  = L.wKor;
-  document.getElementById('img-guide').textContent = L.guide;
+  // 실제 이미지 세팅
+  const icImg   = document.getElementById('ic-img');
+  const icEmoji = document.getElementById('ic-emoji');
+  if (L.img) {
+    icImg.src = L.img;
+    icImg.alt = L.word;
+    icImg.style.display = '';
+    icEmoji.style.display = 'none';   // 이미지 있으면 이모지 숨김
+    icImg.onload  = () => { icEmoji.style.display = 'none'; };
+    icImg.onerror = () => { icImg.style.display = 'none'; icEmoji.style.display = ''; };
+  } else {
+    icImg.style.display   = 'none';
+    icEmoji.style.display = '';
+    icEmoji.textContent   = L.emoji;
+  }
+  document.getElementById('fc-word').textContent = L.word;
+  document.getElementById('fc-kor').textContent  = L.wKor;
+  document.getElementById('img-guide').textContent = L.phonics || L.wKor;
 
   /* ─ Phonics breakdown ─ */
   buildPhonicsBreakdown(L);
@@ -1720,17 +1818,28 @@ function buildGame(L) {
     const card = document.createElement('div');
     card.className = 'game-card';
 
+    // 이미지 있으면 이미지, 없으면 이모지
     const ge = document.createElement('div');
     ge.className = 'ge';
-    ge.textContent = opt.emoji;  // emoji — safe text
+    if (opt.img) {
+      const img = document.createElement('img');
+      img.src = opt.img;
+      img.alt = opt.word;
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:8px;position:absolute;inset:0;';
+      img.onerror = () => { img.style.display='none'; ge.textContent = opt.emoji; };
+      ge.style.position = 'relative';
+      ge.style.overflow = 'hidden';
+      ge.appendChild(img);
+    } else {
+      ge.textContent = opt.emoji;
+    }
 
     const gw = document.createElement('div');
     gw.className = 'gw-txt';
-    gw.textContent = opt.word;   // safe text
+    gw.textContent = opt.word;
 
     card.appendChild(ge);
     card.appendChild(gw);
-
     card.addEventListener('click', () => onGamePick(card, opt.lt === L.lt, L));
     frag.appendChild(card);
   });

@@ -769,6 +769,8 @@ body::before{
   animation:current-pulse 2.5s ease-in-out infinite;
 }
 .wk-cell.locked{
+  opacity:.55;
+}
   background:var(--glass);border:1px solid var(--border);
   color:var(--text-dim);opacity:.5;cursor:not-allowed;
 }
@@ -827,7 +829,8 @@ body::before{
   border-color:var(--violet);background:rgba(124,106,247,.12);
   box-shadow:0 0 20px rgba(124,106,247,.15);
 }
-.rm-week.locked{opacity:.45;}
+.rm-week.locked{opacity:.6;cursor:pointer;}
+.rm-week.locked:hover{opacity:.9;border-color:rgba(124,106,247,.4);}
 .rm-wk-left{display:flex;flex-direction:column;gap:4px;}
 .rm-wk-num{
   font-family:var(--font-h);font-size:13px;font-weight:700;
@@ -958,12 +961,12 @@ body::before{
     <div class="lesson-content" style="display:flex;flex-direction:column;align-items:center;justify-content:center;">
       <!-- 플래시카드: 실제 이미지 + 오버레이 -->
       <div class="flashcard si" id="ic-card">
-        <img class="flashcard-img" id="ic-img" src="" alt="" onerror="this.style.display='none'"/>
-        <span class="flashcard-emoji-fallback" id="ic-emoji">⚽</span>
+        <img class="flashcard-img" id="ic-img" src="" alt="" style="display:none"/>
+        <span class="flashcard-emoji-fallback" id="ic-emoji" style="display:none"></span>
         <div class="flashcard-overlay">
           <div>
-            <div class="flashcard-word" id="fc-word">ball</div>
-            <div class="flashcard-kor" id="fc-kor">볼</div>
+            <div class="flashcard-word" id="fc-word"></div>
+            <div class="flashcard-kor" id="fc-kor"></div>
           </div>
         </div>
       </div>
@@ -1132,6 +1135,20 @@ body::before{
       <button class="nav-btn" onclick="confirmReset()">
         <span class="nav-icon">🔄</span><span class="nav-lbl">다시하기</span>
       </button>
+    </div>
+  </div>
+
+  <!-- ══════════ JUMP TO WEEK MODAL ══════════ -->
+  <div id="jump-modal" style="display:none;position:absolute;inset:0;z-index:999;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);align-items:center;justify-content:center;">
+    <div style="background:var(--surface);border:1px solid var(--border-b);border-radius:24px;padding:32px 28px;max-width:300px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.5);">
+      <div style="font-size:40px;margin-bottom:8px;">🔓</div>
+      <p style="font-family:var(--font-h);font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px;" id="jump-wk-label">Week ?</p>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:6px;">으로 건너뛸까요?</p>
+      <p style="font-size:14px;color:var(--mint);margin-bottom:24px;line-height:1.6;" id="jump-wk-words"></p>
+      <div style="display:flex;gap:12px;">
+        <button onclick="closeJumpModal()" style="flex:1;padding:14px;border-radius:14px;border:1px solid var(--border-b);background:var(--glass);font-family:var(--font-h);font-size:15px;font-weight:600;color:var(--text-muted);cursor:pointer;">취소</button>
+        <button id="jump-confirm" style="flex:1;padding:14px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--violet),var(--mint));font-family:var(--font-h);font-size:15px;font-weight:700;color:#fff;cursor:pointer;">건너뛰기 🚀</button>
+      </div>
     </div>
   </div>
 
@@ -1493,6 +1510,14 @@ const TOTAL_WEEKS = WEEKS.length; // 12
 // Lookup: letter → PHONICS entry
 const PHONICS_MAP = Object.fromEntries(PHONICS.map(p => [p.lt, p]));
 
+// 카드에 표시할 글자 — 내부 키(CAT2, PIG2 등) 대신 실제 단어 대문자 표시
+function displayLt(L) {
+  if (!L) return '';
+  // lt에 숫자가 붙은 내부 키면 word를 대문자로 표시
+  if (/\d/.test(L.lt) || L.lt.length > 4) return L.word.toUpperCase();
+  return L.lt;
+}
+
 // Phonics index → color class (0-11)
 const COLOR_IDX = Object.fromEntries(PHONICS.map((p,i) => [p.lt, i % 12]));
 
@@ -1752,7 +1777,11 @@ function fillLesson(L) {
   /* ─ Sound screen ─ */
   const lcc = document.getElementById('lc-card');
   applyColor(lcc, L.lt);
-  document.getElementById('lc-letter').textContent  = L.lt;
+  document.getElementById('lc-letter').textContent  = displayLt(L);
+  // 글자 수에 따라 폰트 크기 자동 조절
+  const ltEl = document.getElementById('lc-letter');
+  const ltTxt = displayLt(L);
+  ltEl.style.fontSize = ltTxt.length <= 1 ? '96px' : ltTxt.length <= 3 ? '64px' : ltTxt.length <= 5 ? '48px' : '36px';
   document.getElementById('lc-phonics').textContent = L.ipa || (L.isWord ? L.word : '');
   // 에이 / 에  뱃지
   const badgeRow = document.getElementById('lc-badge-row');
@@ -1782,20 +1811,28 @@ function fillLesson(L) {
   /* ─ Image screen (플래시카드) ─ */
   const icc = document.getElementById('ic-card');
   applyColor(icc, L.lt);
-  // 실제 이미지 세팅
+  // 이미지 완전 리셋 후 새로 세팅 (이전 이미지 잔상 방지)
   const icImg   = document.getElementById('ic-img');
   const icEmoji = document.getElementById('ic-emoji');
+  icImg.src = '';                          // 이전 이미지 즉시 제거
+  icEmoji.textContent = L.emoji;          // 이모지 항상 최신화
   if (L.img) {
-    icImg.src = L.img;
-    icImg.alt = L.word;
-    icImg.style.display = '';
-    icEmoji.style.display = 'none';   // 이미지 있으면 이모지 숨김
-    icImg.onload  = () => { icEmoji.style.display = 'none'; };
-    icImg.onerror = () => { icImg.style.display = 'none'; icEmoji.style.display = ''; };
+    icEmoji.style.display = '';           // 로드 전까지 이모지 보여줌
+    icImg.style.display   = 'none';
+    const newImg = new Image();
+    newImg.onload = () => {
+      icImg.src = newImg.src;
+      icImg.style.display   = '';
+      icEmoji.style.display = 'none';
+    };
+    newImg.onerror = () => {
+      icImg.style.display   = 'none';
+      icEmoji.style.display = '';
+    };
+    newImg.src = L.img;
   } else {
     icImg.style.display   = 'none';
     icEmoji.style.display = '';
-    icEmoji.textContent   = L.emoji;
   }
   document.getElementById('fc-word').textContent = L.word;
   document.getElementById('fc-kor').textContent  = L.wKor;
@@ -1808,7 +1845,7 @@ function fillLesson(L) {
   const rcc = document.getElementById('rc-card');
   applyColor(rcc, L.lt);
   document.getElementById('rc-emoji').textContent  = L.emoji;
-  document.getElementById('rc-letter').textContent = L.lt;
+  document.getElementById('rc-letter').textContent = displayLt(L);
   document.getElementById('rp-hint').textContent   = L.kor
     ? Array(3).fill(L.kor).join(' · ')
     : L.guide;
@@ -2042,6 +2079,37 @@ function resetAll() {
   save(); buildHome(); show('s-home'); hideLessonChrome();
 }
 
+function jumpToWeek(wkIdx) {
+  const isDone    = ST.doneWk.includes(wkIdx);
+  const isCurrent = wkIdx === ST.wkIdx;
+
+  if (isDone || isCurrent) {
+    // 완료했거나 현재 주차 — 바로 시작
+    ST.wkIdx = wkIdx; ST.ltIdx = 0; ST.step = 's-sound'; save();
+    fillLesson(curLesson()); goStep('s-sound');
+    return;
+  }
+
+  // 잠긴 주차 — 건너뛰기 확인 모달
+  const wk = WEEKS[wkIdx];
+  const words = wk.letters.map(lt => {
+    const L = PHONICS_MAP[lt];
+    return L ? (L.emoji + ' ' + (L.word || L.lt)) : lt;
+  }).join('  ·  ');
+
+  document.getElementById('jump-wk-label').textContent  = `Week ${wk.num}`;
+  document.getElementById('jump-wk-words').textContent  = words;
+  document.getElementById('jump-modal').style.display   = 'flex';
+  document.getElementById('jump-confirm').onclick = () => {
+    document.getElementById('jump-modal').style.display = 'none';
+    ST.wkIdx = wkIdx; ST.ltIdx = 0; ST.step = 's-sound'; save();
+    fillLesson(curLesson()); goStep('s-sound');
+  };
+}
+function closeJumpModal() {
+  document.getElementById('jump-modal').style.display = 'none';
+}
+
 function confirmReset() {
   const modal = document.getElementById('reset-modal');
   modal.style.display = 'flex';
@@ -2246,7 +2314,9 @@ function buildHome() {
     lbl2.textContent = `W${wk.num}`;
 
     cell.appendChild(num); cell.appendChild(lbl2);
-    if (!isDone && !isCurrent) cell.style.pointerEvents = 'none';
+    // 모든 주차 클릭 가능 — 잠긴 주차는 미리보기로 진입
+    cell.style.cursor = 'pointer';
+    cell.addEventListener('click', () => jumpToWeek(i));
     grid.appendChild(cell);
   });
   frag.appendChild(grid);
@@ -2311,6 +2381,9 @@ function buildRoadmap() {
       badge.textContent = isDone ? '✅' : isCurrent ? '▶️' : '🔒';
 
       row.appendChild(left); row.appendChild(badge);
+      // 모든 주차 클릭 가능
+      row.style.cursor = 'pointer';
+      row.addEventListener('click', () => jumpToWeek(wkGlobalIdx));
       sec.appendChild(row);
     });
 

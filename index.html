@@ -804,6 +804,13 @@ body::before{
 ══════════════════════════════════════ */
 #s-roadmap{background:var(--bg);}
 .roadmap-month{margin-bottom:24px;}
+.rm-section-header{
+  font-family:var(--font-h);font-size:13px;font-weight:700;
+  color:var(--violet);letter-spacing:.08em;text-transform:uppercase;
+  padding:8px 4px 4px;margin-bottom:4px;
+  border-bottom:1px solid rgba(124,106,247,.25);
+  margin-top:8px;
+}
 .rm-month-label{
   font-family:var(--font-h);font-size:15px;font-weight:700;
   color:var(--text-muted);margin-bottom:10px;
@@ -1075,6 +1082,10 @@ body::before{
         <span class="nav-icon">⭐</span>
         <span class="nav-lbl">내 기록</span>
       </button>
+      <button class="nav-btn" id="nav-reset" onclick="confirmReset()">
+        <span class="nav-icon">🔄</span>
+        <span class="nav-lbl">다시하기</span>
+      </button>
     </div>
   </div>
 
@@ -1094,6 +1105,9 @@ body::before{
       </button>
       <button class="nav-btn" onclick="showProgress()">
         <span class="nav-icon">⭐</span><span class="nav-lbl">내 기록</span>
+      </button>
+      <button class="nav-btn" onclick="confirmReset()">
+        <span class="nav-icon">🔄</span><span class="nav-lbl">다시하기</span>
       </button>
     </div>
   </div>
@@ -1115,6 +1129,22 @@ body::before{
       <button class="nav-btn active">
         <span class="nav-icon">⭐</span><span class="nav-lbl">내 기록</span>
       </button>
+      <button class="nav-btn" onclick="confirmReset()">
+        <span class="nav-icon">🔄</span><span class="nav-lbl">다시하기</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════ RESET CONFIRM MODAL ══════════ -->
+  <div id="reset-modal" style="display:none;position:absolute;inset:0;z-index:999;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);align-items:center;justify-content:center;">
+    <div style="background:var(--surface);border:1px solid var(--border-b);border-radius:24px;padding:32px 28px;max-width:300px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.5);">
+      <div style="font-size:48px;margin-bottom:12px;">🔄</div>
+      <p style="font-family:var(--font-h);font-size:20px;font-weight:700;color:var(--text);margin-bottom:8px;">처음부터 다시할까요?</p>
+      <p style="font-size:14px;color:var(--text-muted);margin-bottom:28px;line-height:1.5;">모든 학습 기록과 스티커가<br>지워져요 😢</p>
+      <div style="display:flex;gap:12px;">
+        <button onclick="closeResetModal()" style="flex:1;padding:14px;border-radius:14px;border:1px solid var(--border-b);background:var(--glass);font-family:var(--font-h);font-size:15px;font-weight:600;color:var(--text-muted);cursor:pointer;">취소</button>
+        <button onclick="doReset()" style="flex:1;padding:14px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--coral),#FF3B5C);font-family:var(--font-h);font-size:15px;font-weight:700;color:#fff;cursor:pointer;">다시하기 🔄</button>
+      </div>
     </div>
   </div>
 
@@ -1273,26 +1303,186 @@ const PHONICS = [
 
   /* Month 3 — Wk12 */
   {lt:'REVIEW',ipa:'',kor:'복습',phonics:'',word:'review',wKor:'복습',emoji:'🔄',img:'',isReview:true,breakdown:[]},
+
+  /* ══════════════════════════════════════════════════════
+     섹션 2 — 단모음 패밀리 (CVC 패턴)
+     Month 4: -at / -an / -ap
+     Month 5: -ig / -in / -it
+     Month 6: -og / -op / -ot
+  ══════════════════════════════════════════════════════ */
+
+  /* Month 4 — Wk13: -at 패밀리 */
+  {lt:'CAT2', ipa:'/kæt/', kor:'캣', phonics:'크-애-트', word:'cat',  wKor:'캣',  emoji:'🐱',
+   img:'https://cdn.jsdelivr.net/npm/openmoji@15.0.0/color/svg/1F431.svg',
+   isWord:true, family:'-at',
+   breakdown:[{lt:'C',ipa:'/k/',kor:'크',sound:'kuh'},{lt:'A',ipa:'/æ/',kor:'애',sound:'at'},{lt:'T',ipa:'/t/',kor:'트',sound:''}]},
+  {lt:'HAT2', ipa:'/hæt/', kor:'햇', phonics:'흐-애-트', word:'hat',  wKor:'햇',  emoji:'🎩',
+   img:'https://cdn.jsdelivr.net/npm/openmoji@15.0.0/color/svg/1F3A9.svg',
+   isWord:true, family:'-at',
+   breakdown:[{lt:'H',ipa:'/h/',kor:'흐',sound:'huh'},{lt:'A',ipa:'/æ/',kor:'애',sound:'at'},{lt:'T',ipa:'/t/',kor:'트',sound:''}]},
+  {lt:'BAT',  ipa:'/bæt/', kor:'배트',phonics:'브-애-트', word:'bat',  wKor:'배트', emoji:'🦇',
+   img:'https://cdn.jsdelivr.net/npm/openmoji@15.0.0/color/svg/1F987.svg',
+   isWord:true, family:'-at',
+   breakdown:[{lt:'B',ipa:'/b/',kor:'브',sound:'buh'},{lt:'A',ipa:'/æ/',kor:'애',sound:'at'},{lt:'T',ipa:'/t/',kor:'트',sound:''}]},
+
+  /* Month 4 — Wk14: -an 패밀리 */
+  {lt:'MAN',  ipa:'/mæn/', kor:'맨',  phonics:'므-애-느', word:'man',  wKor:'맨',  emoji:'👨',
+   img:'https://cdn.jsdelivr.net/npm/openmoji@15.0.0/color/svg/1F468.svg',
+   isWord:true, family:'-an',
+   breakdown:[{lt:'M',ipa:'/m/',kor:'므',sound:'muh'},{lt:'A',ipa:'/æ/',kor:'애',sound:'an'},{lt:'N',ipa:'/n/',kor:'느',sound:''}]},
+  {lt:'CAN',  ipa:'/kæn/', kor:'캔',  phonics:'크-애-느', word:'can',  wKor:'캔',  emoji:'🥫',
+   img:'https://cdn.jsdelivr.net/npm/openmoji@15.0.0/color/svg/1F96B.svg',
+   isWord:true, family:'-an',
+   breakdown:[{lt:'C',ipa:'/k/',kor:'크',sound:'kuh'},{lt:'A',ipa:'/æ/',kor:'애',sound:'an'},{lt:'N',ipa:'/n/',kor:'느',sound:''}]},
+  {lt:'FAN',  ipa:'/fæn/', kor:'팬',  phonics:'프-애-느', word:'fan',  wKor:'팬',  emoji:'🌀',
+   img:'https://cdn.jsdelivr.net/npm/openmoji@15.0.0/color/svg/1F32A.svg',
+   isWord:true, family:'-an',
+   breakdown:[{lt:'F',ipa:'/f/',kor:'프',sound:'fuh'},{lt:'A',ipa:'/æ/',kor:'애',sound:'an'},{lt:'N',ipa:'/n/',kor:'느',sound:''}]},
+
+  /* Month 4 — Wk15: -ap 패밀리 */
+  {lt:'MAP',  ipa:'/mæp/', kor:'맵',  phonics:'므-애-프', word:'map',  wKor:'지도', emoji:'🗺️',
+   img:'https://cdn.jsdelivr.net/npm/openmoji@15.0.0/color/svg/1F5FA.svg',
+   isWord:true, family:'-ap',
+   breakdown:[{lt:'M',ipa:'/m/',kor:'므',sound:'muh'},{lt:'A',ipa:'/æ/',kor:'애',sound:'ap'},{lt:'P',ipa:'/p/',kor:'프',sound:''}]},
+  {lt:'CAP',  ipa:'/kæp/', kor:'캡',  phonics:'크-애-프', word:'cap',  wKor:'모자', emoji:'🧢',
+   img:'https://cdn.jsdelivr.net/npm/openmoji@15.0.0/color/svg/1F9E2.svg',
+   isWord:true, family:'-ap',
+   breakdown:[{lt:'C',ipa:'/k/',kor:'크',sound:'kuh'},{lt:'A',ipa:'/æ/',kor:'애',sound:'ap'},{lt:'P',ipa:'/p/',kor:'프',sound:''}]},
+  {lt:'NAP',  ipa:'/næp/', kor:'냅',  phonics:'느-애-프', word:'nap',  wKor:'낮잠', emoji:'😴',
+   img:'https://cdn.jsdelivr.net/npm/openmoji@15.0.0/color/svg/1F634.svg',
+   isWord:true, family:'-ap',
+   breakdown:[{lt:'N',ipa:'/n/',kor:'느',sound:'nuh'},{lt:'A',ipa:'/æ/',kor:'애',sound:'ap'},{lt:'P',ipa:'/p/',kor:'프',sound:''}]},
+
+  /* Month 4 — Wk16: -at/-an/-ap 복습 */
+  {lt:'REV2', ipa:'',kor:'복습',phonics:'',word:'review',wKor:'복습',emoji:'🔄',img:'',isReview:true,breakdown:[]},
+
+  /* Month 5 — Wk17: -ig 패밀리 */
+  {lt:'PIG2', ipa:'/pɪg/', kor:'픽',  phonics:'프-이-그', word:'pig',  wKor:'돼지', emoji:'🐷',
+   img:'https://cdn.jsdelivr.net/npm/openmoji@15.0.0/color/svg/1F437.svg',
+   isWord:true, family:'-ig',
+   breakdown:[{lt:'P',ipa:'/p/',kor:'프',sound:'puh'},{lt:'I',ipa:'/ɪ/',kor:'이',sound:'ig'},{lt:'G',ipa:'/g/',kor:'그',sound:''}]},
+  {lt:'BIG',  ipa:'/bɪg/', kor:'빅',  phonics:'브-이-그', word:'big',  wKor:'크다', emoji:'🔵',
+   img:'https://cdn.jsdelivr.net/npm/openmoji@15.0.0/color/svg/1F535.svg',
+   isWord:true, family:'-ig',
+   breakdown:[{lt:'B',ipa:'/b/',kor:'브',sound:'buh'},{lt:'I',ipa:'/ɪ/',kor:'이',sound:'ig'},{lt:'G',ipa:'/g/',kor:'그',sound:''}]},
+  {lt:'DIG',  ipa:'/dɪg/', kor:'딕',  phonics:'드-이-그', word:'dig',  wKor:'파다', emoji:'⛏️',
+   img:'https://cdn.jsdelivr.net/npm/openmoji@15.0.0/color/svg/26CF.svg',
+   isWord:true, family:'-ig',
+   breakdown:[{lt:'D',ipa:'/d/',kor:'드',sound:'duh'},{lt:'I',ipa:'/ɪ/',kor:'이',sound:'ig'},{lt:'G',ipa:'/g/',kor:'그',sound:''}]},
+
+  /* Month 5 — Wk18: -in 패밀리 */
+  {lt:'BIN',  ipa:'/bɪn/', kor:'빈',  phonics:'브-이-느', word:'bin',  wKor:'통',   emoji:'🗑️',
+   img:'https://cdn.jsdelivr.net/npm/openmoji@15.0.0/color/svg/1F5D1.svg',
+   isWord:true, family:'-in',
+   breakdown:[{lt:'B',ipa:'/b/',kor:'브',sound:'buh'},{lt:'I',ipa:'/ɪ/',kor:'이',sound:'in'},{lt:'N',ipa:'/n/',kor:'느',sound:''}]},
+  {lt:'TIN',  ipa:'/tɪn/', kor:'틴',  phonics:'트-이-느', word:'tin',  wKor:'통조림',emoji:'🥫',
+   img:'https://cdn.jsdelivr.net/npm/openmoji@15.0.0/color/svg/1F96C.svg',
+   isWord:true, family:'-in',
+   breakdown:[{lt:'T',ipa:'/t/',kor:'트',sound:'tuh'},{lt:'I',ipa:'/ɪ/',kor:'이',sound:'in'},{lt:'N',ipa:'/n/',kor:'느',sound:''}]},
+  {lt:'WIN',  ipa:'/wɪn/', kor:'윈',  phonics:'우-이-느', word:'win',  wKor:'이기다',emoji:'🏆',
+   img:'https://cdn.jsdelivr.net/npm/openmoji@15.0.0/color/svg/1F3C6.svg',
+   isWord:true, family:'-in',
+   breakdown:[{lt:'W',ipa:'/w/',kor:'우',sound:'wuh'},{lt:'I',ipa:'/ɪ/',kor:'이',sound:'in'},{lt:'N',ipa:'/n/',kor:'느',sound:''}]},
+
+  /* Month 5 — Wk19: -it 패밀리 */
+  {lt:'SIT',  ipa:'/sɪt/', kor:'싯',  phonics:'스-이-트', word:'sit',  wKor:'앉다', emoji:'🪑',
+   img:'https://cdn.jsdelivr.net/npm/openmoji@15.0.0/color/svg/1FA91.svg',
+   isWord:true, family:'-it',
+   breakdown:[{lt:'S',ipa:'/s/',kor:'스',sound:'suh'},{lt:'I',ipa:'/ɪ/',kor:'이',sound:'it'},{lt:'T',ipa:'/t/',kor:'트',sound:''}]},
+  {lt:'HIT',  ipa:'/hɪt/', kor:'힛',  phonics:'흐-이-트', word:'hit',  wKor:'치다', emoji:'🥊',
+   img:'https://cdn.jsdelivr.net/npm/openmoji@15.0.0/color/svg/1F94A.svg',
+   isWord:true, family:'-it',
+   breakdown:[{lt:'H',ipa:'/h/',kor:'흐',sound:'huh'},{lt:'I',ipa:'/ɪ/',kor:'이',sound:'it'},{lt:'T',ipa:'/t/',kor:'트',sound:''}]},
+  {lt:'BIT',  ipa:'/bɪt/', kor:'빗',  phonics:'브-이-트', word:'bit',  wKor:'조금', emoji:'✂️',
+   img:'https://cdn.jsdelivr.net/npm/openmoji@15.0.0/color/svg/2702.svg',
+   isWord:true, family:'-it',
+   breakdown:[{lt:'B',ipa:'/b/',kor:'브',sound:'buh'},{lt:'I',ipa:'/ɪ/',kor:'이',sound:'it'},{lt:'T',ipa:'/t/',kor:'트',sound:''}]},
+
+  /* Month 5 — Wk20: -ig/-in/-it 복습 */
+  {lt:'REV3', ipa:'',kor:'복습',phonics:'',word:'review',wKor:'복습',emoji:'🔄',img:'',isReview:true,breakdown:[]},
+
+  /* Month 6 — Wk21: -og 패밀리 */
+  {lt:'DOG2', ipa:'/dɒg/', kor:'독',  phonics:'드-오-그', word:'dog',  wKor:'강아지',emoji:'🐶',
+   img:'https://cdn.jsdelivr.net/npm/openmoji@15.0.0/color/svg/1F436.svg',
+   isWord:true, family:'-og',
+   breakdown:[{lt:'D',ipa:'/d/',kor:'드',sound:'duh'},{lt:'O',ipa:'/ɒ/',kor:'오',sound:'og'},{lt:'G',ipa:'/g/',kor:'그',sound:''}]},
+  {lt:'LOG',  ipa:'/lɒg/', kor:'록',  phonics:'르-오-그', word:'log',  wKor:'통나무',emoji:'🪵',
+   img:'https://cdn.jsdelivr.net/npm/openmoji@15.0.0/color/svg/1FAB5.svg',
+   isWord:true, family:'-og',
+   breakdown:[{lt:'L',ipa:'/l/',kor:'르',sound:'luh'},{lt:'O',ipa:'/ɒ/',kor:'오',sound:'og'},{lt:'G',ipa:'/g/',kor:'그',sound:''}]},
+  {lt:'FOG',  ipa:'/fɒg/', kor:'폭',  phonics:'프-오-그', word:'fog',  wKor:'안개', emoji:'🌫️',
+   img:'https://cdn.jsdelivr.net/npm/openmoji@15.0.0/color/svg/1F32B.svg',
+   isWord:true, family:'-og',
+   breakdown:[{lt:'F',ipa:'/f/',kor:'프',sound:'fuh'},{lt:'O',ipa:'/ɒ/',kor:'오',sound:'og'},{lt:'G',ipa:'/g/',kor:'그',sound:''}]},
+
+  /* Month 6 — Wk22: -op 패밀리 */
+  {lt:'HOP',  ipa:'/hɒp/', kor:'홉',  phonics:'흐-오-프', word:'hop',  wKor:'깡충',  emoji:'🐸',
+   img:'https://cdn.jsdelivr.net/npm/openmoji@15.0.0/color/svg/1F438.svg',
+   isWord:true, family:'-op',
+   breakdown:[{lt:'H',ipa:'/h/',kor:'흐',sound:'huh'},{lt:'O',ipa:'/ɒ/',kor:'오',sound:'op'},{lt:'P',ipa:'/p/',kor:'프',sound:''}]},
+  {lt:'TOP',  ipa:'/tɒp/', kor:'탑',  phonics:'트-오-프', word:'top',  wKor:'위',    emoji:'🔝',
+   img:'https://cdn.jsdelivr.net/npm/openmoji@15.0.0/color/svg/1F51D.svg',
+   isWord:true, family:'-op',
+   breakdown:[{lt:'T',ipa:'/t/',kor:'트',sound:'tuh'},{lt:'O',ipa:'/ɒ/',kor:'오',sound:'op'},{lt:'P',ipa:'/p/',kor:'프',sound:''}]},
+  {lt:'MOP',  ipa:'/mɒp/', kor:'몹',  phonics:'므-오-프', word:'mop',  wKor:'대걸레',emoji:'🧹',
+   img:'https://cdn.jsdelivr.net/npm/openmoji@15.0.0/color/svg/1F9F9.svg',
+   isWord:true, family:'-op',
+   breakdown:[{lt:'M',ipa:'/m/',kor:'므',sound:'muh'},{lt:'O',ipa:'/ɒ/',kor:'오',sound:'op'},{lt:'P',ipa:'/p/',kor:'프',sound:''}]},
+
+  /* Month 6 — Wk23: -ot 패밀리 */
+  {lt:'HOT',  ipa:'/hɒt/', kor:'홧',  phonics:'흐-오-트', word:'hot',  wKor:'뜨겁다',emoji:'🌡️',
+   img:'https://cdn.jsdelivr.net/npm/openmoji@15.0.0/color/svg/1F321.svg',
+   isWord:true, family:'-ot',
+   breakdown:[{lt:'H',ipa:'/h/',kor:'흐',sound:'huh'},{lt:'O',ipa:'/ɒ/',kor:'오',sound:'ot'},{lt:'T',ipa:'/t/',kor:'트',sound:''}]},
+  {lt:'POT',  ipa:'/pɒt/', kor:'팟',  phonics:'프-오-트', word:'pot',  wKor:'냄비', emoji:'🍲',
+   img:'https://cdn.jsdelivr.net/npm/openmoji@15.0.0/color/svg/1F372.svg',
+   isWord:true, family:'-ot',
+   breakdown:[{lt:'P',ipa:'/p/',kor:'프',sound:'puh'},{lt:'O',ipa:'/ɒ/',kor:'오',sound:'ot'},{lt:'T',ipa:'/t/',kor:'트',sound:''}]},
+  {lt:'DOT',  ipa:'/dɒt/', kor:'닷',  phonics:'드-오-트', word:'dot',  wKor:'점',   emoji:'🔴',
+   img:'https://cdn.jsdelivr.net/npm/openmoji@15.0.0/color/svg/1F534.svg',
+   isWord:true, family:'-ot',
+   breakdown:[{lt:'D',ipa:'/d/',kor:'드',sound:'duh'},{lt:'O',ipa:'/ɒ/',kor:'오',sound:'ot'},{lt:'T',ipa:'/t/',kor:'트',sound:''}]},
+
+  /* Month 6 — Wk24: 전체 복습 */
+  {lt:'REV4', ipa:'',kor:'복습',phonics:'',word:'review',wKor:'복습',emoji:'🔄',img:'',isReview:true,breakdown:[]},
 ];
 
 const MONTHS = [
-  {name:'Month 1 — 소리 소개',weeks:[
-    {num:1,letters:['B','M','S']},
-    {num:2,letters:['A','C','D']},
-    {num:3,letters:['P','T','H']},
-    {num:4,letters:['N','F','G']},
+  {num:1, name:'Month 1 — 소리 소개',   section:'알파벳 소리', weeks:[
+    {num:1, letters:['B','M','S']},
+    {num:2, letters:['A','C','D']},
+    {num:3, letters:['P','T','H']},
+    {num:4, letters:['N','F','G']},
   ]},
-  {name:'Month 2 — 소리 반복',weeks:[
-    {num:5,letters:['L','R','K']},
-    {num:6,letters:['E','I','O']},
-    {num:7,letters:['U','W','Y']},
-    {num:8,letters:['Z','V','J']},
+  {num:2, name:'Month 2 — 소리 반복',   section:'알파벳 소리', weeks:[
+    {num:5, letters:['L','R','K']},
+    {num:6, letters:['E','I','O']},
+    {num:7, letters:['U','W','Y']},
+    {num:8, letters:['Z','V','J']},
   ]},
-  {name:'Month 3 — 단어 인식',weeks:[
-    {num:9, letters:['CAT','BALL','SUN']},
-    {num:10,letters:['DOG','PIG','HAT']},
-    {num:11,letters:['MOON','FISH','APPLE']},
-    {num:12,letters:['REVIEW']},
+  {num:3, name:'Month 3 — 단어 인식',   section:'알파벳 소리', weeks:[
+    {num:9,  letters:['CAT','BALL','SUN']},
+    {num:10, letters:['DOG','PIG','HAT']},
+    {num:11, letters:['MOON','FISH','APPLE']},
+    {num:12, letters:['REVIEW']},
+  ]},
+  {num:4, name:'Month 4 — -at·-an·-ap', section:'단모음 패밀리', weeks:[
+    {num:13, letters:['CAT2','HAT2','BAT'],  family:'-at'},
+    {num:14, letters:['MAN','CAN','FAN'],    family:'-an'},
+    {num:15, letters:['MAP','CAP','NAP'],    family:'-ap'},
+    {num:16, letters:['REV2']},
+  ]},
+  {num:5, name:'Month 5 — -ig·-in·-it', section:'단모음 패밀리', weeks:[
+    {num:17, letters:['PIG2','BIG','DIG'],   family:'-ig'},
+    {num:18, letters:['BIN','TIN','WIN'],    family:'-in'},
+    {num:19, letters:['SIT','HIT','BIT'],    family:'-it'},
+    {num:20, letters:['REV3']},
+  ]},
+  {num:6, name:'Month 6 — -og·-op·-ot', section:'단모음 패밀리', weeks:[
+    {num:21, letters:['DOG2','LOG','FOG'],   family:'-og'},
+    {num:22, letters:['HOP','TOP','MOP'],    family:'-op'},
+    {num:23, letters:['HOT','POT','DOT'],    family:'-ot'},
+    {num:24, letters:['REV4']},
   ]},
 ];
 
@@ -1570,6 +1760,12 @@ function fillLesson(L) {
   const badgePhonics = document.getElementById('lc-badge-phonics');
   if (L.isReview) {
     badgeRow.style.display = 'none';
+  } else if (L.family) {
+    // 섹션2 단모음 패밀리 — 패턴 강조 표시
+    badgeRow.style.display = 'flex';
+    badgeName.textContent    = L.wKor;
+    badgePhonics.textContent = L.family;   // -at, -an, -ig 등
+    badgePhonics.style.display = '';
   } else if (L.isWord) {
     badgeRow.style.display = 'flex';
     badgeName.textContent    = L.wKor;
@@ -1846,6 +2042,18 @@ function resetAll() {
   save(); buildHome(); show('s-home'); hideLessonChrome();
 }
 
+function confirmReset() {
+  const modal = document.getElementById('reset-modal');
+  modal.style.display = 'flex';
+}
+function closeResetModal() {
+  document.getElementById('reset-modal').style.display = 'none';
+}
+function doReset() {
+  closeResetModal();
+  resetAll();
+}
+
 /* ══════════════════════════════════════════════════════
    GAME
    Security: game card text from PHONICS data only
@@ -1855,10 +2063,17 @@ function buildGame(L) {
   qEl.textContent = L.ipa ? L.ipa : L.word;
   document.getElementById('game-next').disabled = true;
 
+  // 중복 단어 제거: 정답과 같은 word는 모두 제외, word 기준 유니크하게 3개 선택
+  const seen = new Set([L.word]);
   const others = PHONICS
-    .filter(p => p.lt !== L.lt)
+    .filter(p => {
+      if (seen.has(p.word)) return false;
+      seen.add(p.word);
+      return true;
+    })
     .sort(() => Math.random() - 0.5)
     .slice(0, 3);
+
   const opts = [L, ...others].sort(() => Math.random() - 0.5);
 
   const grid = document.getElementById('game-grid');
@@ -1868,7 +2083,6 @@ function buildGame(L) {
     const card = document.createElement('div');
     card.className = 'game-card';
 
-    // 이미지 있으면 이미지, 없으면 이모지
     const ge = document.createElement('div');
     ge.className = 'ge';
     if (opt.img) {
@@ -1877,9 +2091,7 @@ function buildGame(L) {
       img.alt = opt.word;
       img.style.cssText = 'width:72px;height:72px;object-fit:contain;display:block;filter:drop-shadow(0 2px 8px rgba(0,0,0,.2));';
       img.onerror = () => { img.style.display='none'; ge.textContent = opt.emoji; };
-      ge.style.display = 'flex';
-      ge.style.alignItems = 'center';
-      ge.style.justifyContent = 'center';
+      ge.style.cssText = 'display:flex;align-items:center;justify-content:center;';
       ge.appendChild(img);
     } else {
       ge.textContent = opt.emoji;
@@ -1891,7 +2103,7 @@ function buildGame(L) {
 
     card.appendChild(ge);
     card.appendChild(gw);
-    card.addEventListener('click', () => onGamePick(card, opt.lt === L.lt, L));
+    card.addEventListener('click', () => onGamePick(card, opt.word === L.word, L));
     frag.appendChild(card);
   });
 
@@ -2050,7 +2262,18 @@ function buildRoadmap() {
   const scroll = document.getElementById('roadmap-scroll');
   const frag = document.createDocumentFragment();
 
+  // 섹션별로 그룹핑
+  let lastSection = '';
   MONTHS.forEach(month => {
+    // 섹션 헤더 (섹션이 바뀔 때만)
+    if (month.section && month.section !== lastSection) {
+      lastSection = month.section;
+      const secHeader = document.createElement('div');
+      secHeader.className = 'rm-section-header';
+      secHeader.textContent = month.section === '알파벳 소리' ? '📖 섹션 1 — 알파벳 소리' : '🔤 섹션 2 — 단모음 패밀리';
+      frag.appendChild(secHeader);
+    }
+
     const sec = document.createElement('div'); sec.className = 'roadmap-month';
     const mlbl = document.createElement('p'); mlbl.className = 'rm-month-label';
     mlbl.textContent = month.name;
@@ -2060,14 +2283,14 @@ function buildRoadmap() {
       const wkGlobalIdx = WEEKS.findIndex(w => w.num === wk.num);
       const isDone    = ST.doneWk.includes(wkGlobalIdx);
       const isCurrent = wkGlobalIdx === ST.wkIdx;
-      const isLocked  = wkGlobalIdx > ST.wkIdx && !isDone;
 
       const row = document.createElement('div');
       row.className = 'rm-week ' + (isDone ? 'done' : isCurrent ? 'current' : 'locked');
 
       const left = document.createElement('div'); left.className = 'rm-wk-left';
       const num  = document.createElement('span'); num.className = 'rm-wk-num';
-      num.textContent = `Week ${wk.num}`;
+      // 패밀리 라벨 있으면 표시
+      num.textContent = wk.family ? `Week ${wk.num}  ${wk.family}` : `Week ${wk.num}`;
 
       const chips = document.createElement('div'); chips.className = 'rm-chips';
       wk.letters.forEach(lt => {
@@ -2077,7 +2300,7 @@ function buildRoadmap() {
         const emojiSpan = document.createElement('span');
         emojiSpan.textContent = L.emoji;
         const ltSpan = document.createElement('span');
-        ltSpan.textContent = L.lt;
+        ltSpan.textContent = L.word || L.lt;
         chip.appendChild(emojiSpan); chip.appendChild(ltSpan);
         chips.appendChild(chip);
       });

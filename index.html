@@ -869,7 +869,7 @@ body::before{
 
   <!-- ── LESSON TOP BAR ── -->
   <div id="lesson-bar" class="hidden">
-    <button class="lb-back" onclick="goHome()" aria-label="홈으로">←</button>
+    <button class="lb-back" onclick="goHome()" aria-label="홈으로">🏠</button>
     <span class="lb-step" id="lb-step-txt">1 / 3</span>
     <div style="width:36px"></div>
   </div>
@@ -985,13 +985,14 @@ body::before{
   <!-- ══════════ REWARD ══════════ -->
   <div id="s-end" class="screen">
     <div class="end-sticker" id="end-sticker">⭐</div>
-    <h2 class="end-title">대단해! 🎊</h2>
+    <h2 class="end-title" id="end-title">잘했어! 🎉</h2>
     <p class="end-sub" id="end-sub">스티커 받았어!</p>
     <div class="stk-album" id="stk-row"></div>
     <div id="conf-container" style="position:absolute;inset:0;pointer-events:none;overflow:hidden;"></div>
     <div class="end-btn-zone">
       <button class="btn-primary" id="btn-continue" onclick="continueLesson()">이어서 하기 →</button>
-      <button class="btn-outline" onclick="restartLesson()">다시 하기 🔄</button>
+      <button class="btn-dark"    id="btn-end-home" onclick="goHome()" style="display:none;">🏠 홈으로</button>
+      <button class="btn-ghost"                     onclick="restartLesson()">다시 하기 🔄</button>
     </div>
   </div>
 
@@ -1266,13 +1267,36 @@ function applyColor(el, lt) {
 const ttsOK = 'speechSynthesis' in window;
 let _voices = [];
 
-/* ─── 알파벳 이름 발음 (에이, 비, 씨…) ───
-   s-sound 화면과 s-repeat 다시듣기에 사용 */
+/* ─── 알파벳 이름: 모바일 TTS가 확실하게 읽도록
+   짧은 단어/단일문자는 TTS가 오독하므로
+   "the letter ___" 형식으로 넘겨 정확한 발음 유도 ─── */
 const alphabetNameMap = {
-  A:'A', B:'B', C:'C', D:'D', E:'E', F:'F', G:'G', H:'H',
-  I:'I', J:'J', K:'K', L:'L', M:'M', N:'N', O:'O', P:'P',
-  Q:'Q', R:'R', S:'S', T:'T', U:'U', V:'V', W:'W', X:'X',
-  Y:'Y', Z:'Z',
+  A:'the letter A, ay',
+  B:'the letter B, bee',
+  C:'the letter C, see',
+  D:'the letter D, dee',
+  E:'the letter E, ee',
+  F:'the letter F, ef',
+  G:'the letter G, jee',
+  H:'the letter H, aitch',
+  I:'the letter I, eye',
+  J:'the letter J, jay',
+  K:'the letter K, kay',
+  L:'the letter L, el',
+  M:'the letter M, em',
+  N:'the letter N, en',
+  O:'the letter O, oh',
+  P:'the letter P, pee',
+  Q:'the letter Q, cue',
+  R:'the letter R, ar',
+  S:'the letter S, ess',
+  T:'the letter T, tee',
+  U:'the letter U, you',
+  V:'the letter V, vee',
+  W:'the letter W, double you',
+  X:'the letter X, ex',
+  Y:'the letter Y, why',
+  Z:'the letter Z, zee',
 };
 
 /* ─── 파닉스 발음 소리 (buh, kuh, …) ───
@@ -1325,14 +1349,15 @@ function speakSequence(texts, rate, gap, cb) {
    화면별 TTS 함수
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-/* [s-sound] 알파벳 이름 발음: "B" → "B" (비)
+/* [s-sound] 알파벳 이름 발음: "B" → "the letter B, bee"
    단어 레슨(Month3)에서는 단어 전체 발음 */
 function playAlphaName(L, cb) {
   if (!L) { if (cb) cb(); return; }
   if (L.isWord || L.isReview) {
-    speak(L.word, 0.70, cb);
+    speak(L.word, 0.72, cb);
   } else {
-    speak(L.lt, 0.70, cb);   // TTS가 알파벳 이름("B"→"비")으로 읽음
+    const name = alphabetNameMap[L.lt] || ('the letter ' + L.lt);
+    speak(name, 0.80, cb);  // 천천히 명확하게
   }
 }
 
@@ -1563,11 +1588,25 @@ function showReward() {
   const newStk = STICKERS[ST.stk.length % STICKERS.length];
   ST.stk.push(newStk); save();
 
+  // 같은 주차 안에 아직 배울 글자가 있는지만 확인
+  const hasNextInWeek = ST.ltIdx + 1 < curWeek().letters.length;
+
+  // 제목/부제 동적 변경
+  const titleEl = document.getElementById('end-title');
+  const subEl   = document.getElementById('end-sub');
+
+  if (hasNextInWeek) {
+    titleEl.textContent = '잘했어! 🎉';
+    subEl.textContent   = '스티커 받았어! ' + newStk;
+  } else {
+    titleEl.textContent = '오늘 학습 완료! 🌙';
+    subEl.textContent   = '내일 또 만나요! ' + newStk;
+  }
+
   document.getElementById('end-sticker').textContent = newStk;
-  document.getElementById('end-sub').textContent = '스티커 받았어! ' + newStk;
 
   // Mini album (last 12 slots)
-  const row = document.getElementById('stk-row');
+  const row  = document.getElementById('stk-row');
   const frag = document.createDocumentFragment();
   const preview = ST.stk.slice(-12);
   for (let i = 0; i < 12; i++) {
@@ -1579,11 +1618,22 @@ function showReward() {
   row.textContent = '';
   row.appendChild(frag);
 
-  // Continue/done button
-  const hasNext = ST.ltIdx + 1 < curWeek().letters.length || ST.wkIdx + 1 < TOTAL_WEEKS;
-  const btn = document.getElementById('btn-continue');
-  btn.textContent = hasNext ? '이어서 하기 →' : '홈으로 🏠';
-  btn.onclick = hasNext ? continueLesson : goHome;
+  // 버튼 구성
+  const btnContinue = document.getElementById('btn-continue');
+  const btnHome     = document.getElementById('btn-end-home');
+
+  if (hasNextInWeek) {
+    // 같은 주차에 글자 더 있음 → 이어서하기 + 홈
+    btnContinue.textContent = '이어서 하기 →';
+    btnContinue.style.display = '';
+    btnContinue.onclick = continueLesson;
+  } else {
+    // 주차 완료 → 다음주 예고 + 홈만
+    btnContinue.textContent = '다음 주 보러가기 →';
+    btnContinue.style.display = '';
+    btnContinue.onclick = moveToNextWeek;
+  }
+  btnHome.style.display = '';
 
   show('s-end');
   hideLessonChrome();

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com https://upload.wikimedia.org; media-src https://upload.wikimedia.org; script-src 'unsafe-inline';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com https://images.unsplash.com; media-src https://translate.google.com; connect-src https://translate.google.com https://images.unsplash.com; script-src 'unsafe-inline';">
 <title>소리 놀이 🦊</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -357,22 +357,30 @@ body::before{
 }
 .lc-badge-sep{color:var(--text-dim);font-size:13px;font-weight:700;}
 .play-pill{
-  display:flex;align-items:center;gap:8px;
-  padding:12px 24px;
-  background:var(--glass);
-  border:1px solid var(--border-b);
+  display:flex;align-items:center;gap:10px;
+  padding:16px 36px;
+  background:linear-gradient(135deg,var(--violet),var(--coral));
+  border:none;
   border-radius:var(--r-full);
-  font-family:var(--font-h);font-size:15px;font-weight:600;
-  color:var(--text-muted);
-  backdrop-filter:blur(12px);
-  cursor:pointer;transition:all .18s;
-  margin-top:8px;
+  font-family:var(--font-h);font-size:18px;font-weight:700;
+  color:#fff;
+  cursor:pointer;
+  margin-top:14px;
+  box-shadow:0 4px 24px rgba(124,106,247,.55);
+  animation:play-bounce 2.2s ease-in-out infinite;
+  transition:transform .12s;
 }
-.play-pill:hover{color:var(--text);border-color:var(--violet);box-shadow:0 0 20px rgba(124,106,247,.2);}
-.play-pill.playing{color:var(--coral-l);border-color:var(--coral);animation:pulse-pill .7s ease-in-out infinite;}
-.play-icon{font-size:18px;}
-@keyframes pulse-pill{0%,100%{opacity:1;}50%{opacity:.65;};}
-
+.play-pill:active{transform:scale(.93);}
+.play-pill.playing{
+  background:linear-gradient(135deg,var(--coral),#FF3B5C);
+  animation:pulse-pill .7s ease-in-out infinite;
+}
+.play-icon{font-size:24px;}
+@keyframes pulse-pill{0%,100%{opacity:1;}50%{opacity:.6;};}
+@keyframes play-bounce{
+  0%,100%{transform:scale(1);    box-shadow:0 4px 24px rgba(124,106,247,.55);}
+  50%    {transform:scale(1.05); box-shadow:0 8px 32px rgba(124,106,247,.8);}
+}
 /* ══════════════════════════════════════
    SCREEN: IMAGE (플래시카드)
 ══════════════════════════════════════ */
@@ -1271,12 +1279,8 @@ function goStep(id) {
     showLessonChrome(stepIdx + 1, LESSON_SCREENS.length);
     document.getElementById('bottom-nav').classList.add('hidden');
   }
-  // 화면별 자동 소리 재생
-  const L = curLesson();
-  if (!L) return;
-  if (id === 's-sound')   autoPlaySound(L);
-  else if (id === 's-image')   autoPlayImage(L);
-  else if (id === 's-phonics') autoPlayPhonics(L);
+  // ⚠️ 모바일 브라우저는 user gesture 없이 오디오 자동재생 차단
+  // → 자동재생 제거, 🔊 버튼을 눌러 소리 듣기
 }
 
 /* ══════════════════════════════════════════════════════
@@ -1312,72 +1316,55 @@ let _voices = [];
 
 /* ══════════════════════════════════════════════════════
    AUDIO SYSTEM
-   알파벳 이름(에이~지): Wikimedia Commons 공개 MP3
-   단어/파닉스 발음: Web Speech API (TTS) 사용
+   알파벳 이름: Google Translate TTS (안정적, 무료)
+   단어/파닉스: Web Speech API (TTS)
 ══════════════════════════════════════════════════════ */
 
-/* ── 알파벳 이름 MP3 맵 (Wikimedia Commons 공개 도메인) ──
-   각 파일: 원어민이 알파벳 이름을 명확히 발음한 녹음 */
-const ALPHA_MP3 = {
-  A: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/5/5c/En-us-a.ogg/En-us-a.ogg.mp3',
-  B: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/5/5b/En-us-b.ogg/En-us-b.ogg.mp3',
-  C: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/6/6b/En-us-c.ogg/En-us-c.ogg.mp3',
-  D: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/e/e3/En-us-d.ogg/En-us-d.ogg.mp3',
-  E: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/5/5e/En-us-e.ogg/En-us-e.ogg.mp3',
-  F: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/4/42/En-us-f.ogg/En-us-f.ogg.mp3',
-  G: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/b/b7/En-us-g.ogg/En-us-g.ogg.mp3',
-  H: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/7/71/En-us-h.ogg/En-us-h.ogg.mp3',
-  I: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/d/d0/En-us-i.ogg/En-us-i.ogg.mp3',
-  J: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/1/19/En-us-j.ogg/En-us-j.ogg.mp3',
-  K: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/4/41/En-us-k.ogg/En-us-k.ogg.mp3',
-  L: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/6/6e/En-us-l.ogg/En-us-l.ogg.mp3',
-  M: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/8/8f/En-us-m.ogg/En-us-m.ogg.mp3',
-  N: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/c/c7/En-us-n.ogg/En-us-n.ogg.mp3',
-  O: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/7/71/En-us-o.ogg/En-us-o.ogg.mp3',
-  P: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/4/48/En-us-p.ogg/En-us-p.ogg.mp3',
-  Q: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/f/fa/En-us-q.ogg/En-us-q.ogg.mp3',
-  R: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/7/70/En-us-r.ogg/En-us-r.ogg.mp3',
-  S: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/e/e3/En-us-s.ogg/En-us-s.ogg.mp3',
-  T: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/7/7f/En-us-t.ogg/En-us-t.ogg.mp3',
-  U: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/e/e6/En-us-u.ogg/En-us-u.ogg.mp3',
-  V: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/4/4c/En-us-v.ogg/En-us-v.ogg.mp3',
-  W: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/8/8e/En-us-w.ogg/En-us-w.ogg.mp3',
-  X: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/5/54/En-us-x.ogg/En-us-x.ogg.mp3',
-  Y: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/f/f1/En-us-y.ogg/En-us-y.ogg.mp3',
-  Z: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/b/b8/En-us-z.ogg/En-us-z.ogg.mp3',
+/* Google Translate TTS — 단어를 넘기면 실제 원어민 발음 반환
+   느린 속도(slow=true)로 요청해 어린이에게 명확하게 들림 */
+function googleTTSUrl(text) {
+  return 'https://translate.google.com/translate_tts?ie=UTF-8&tl=en&client=tw-ob&q=' + encodeURIComponent(text);
+}
+
+/* 알파벳 이름 텍스트 맵 — Google TTS에 넘길 실제 영어 단어 */
+const alphabetNameWord = {
+  A:'ay',  B:'bee', C:'see', D:'dee',  E:'ee',    F:'ef',
+  G:'jee', H:'aitch', I:'eye', J:'jay', K:'kay', L:'el',
+  M:'em',  N:'en',  O:'oh',  P:'pee',  Q:'cue',   R:'ar',
+  S:'ess', T:'tee', U:'you', V:'vee',  W:'double you',
+  X:'ex',  Y:'why', Z:'zee',
 };
 
-/* Audio 캐시: 한 번 로드한 Audio 객체 재사용 */
+/* Audio 캐시 */
 const _audioCache = {};
 
-/* MP3 재생 함수 — 실패 시 TTS fallback */
-function playMP3(url, cb) {
-  if (!url) { if (cb) cb(); return; }
+/* 오디오 재생 (URL 기반) — 실패 시 cb() 호출 */
+function playAudioUrl(url, cb) {
   try {
     let audio = _audioCache[url];
     if (!audio) {
       audio = new Audio(url);
+      audio.crossOrigin = 'anonymous';
       _audioCache[url] = audio;
     }
     audio.currentTime = 0;
-    audio.playbackRate = 0.9;  // 살짝 느리게 — 더 명확하게 들림
+    audio.playbackRate = 0.85;
     audio.onended  = () => { if (cb) cb(); };
-    audio.onerror  = () => {
-      // MP3 로드 실패 → TTS fallback
-      console.warn('MP3 load failed, falling back to TTS:', url);
-      if (cb) cb();
-    };
+    audio.onerror  = () => { console.warn('Audio failed:', url); if (cb) cb(); };
     const p = audio.play();
     if (p && typeof p.catch === 'function') {
-      p.catch(() => { if (cb) cb(); });
+      p.catch(err => {
+        console.warn('Audio play() rejected:', err);
+        if (cb) cb();
+      });
     }
-  } catch (e) {
+  } catch(e) {
+    console.warn('Audio exception:', e);
     if (cb) cb();
   }
 }
 
-/* ─── 파닉스 발음 소리 (buh, kuh, …) ───
-   s-phonics 쪼개기 화면 — TTS 사용 (단어 단위라 TTS도 잘 읽음) */
+/* 파닉스 발음 소리 (buh, kuh, …) — s-phonics 쪼개기 화면 */
 const phoneticMap = {
   B:'buh',  M:'muh',  S:'suh',  A:'ah',   C:'kuh',  D:'duh',
   P:'puh',  T:'tuh',  H:'huh',  N:'nuh',  F:'fuh',  G:'guh',
@@ -1385,9 +1372,7 @@ const phoneticMap = {
   U:'uh',   W:'wuh',  Y:'yuh',  Z:'zuh',  V:'vuh',  J:'juh',
 };
 
-function _loadVoices() {
-  _voices = window.speechSynthesis.getVoices();
-}
+function _loadVoices() { _voices = window.speechSynthesis.getVoices(); }
 
 function _bestVoice() {
   return _voices.find(v => /samantha|karen|zira|moira/i.test(v.name) && v.lang.startsWith('en'))
@@ -1396,7 +1381,7 @@ function _bestVoice() {
       || null;
 }
 
-/* TTS speak — 단어/파닉스용 */
+/* TTS speak — 단어/파닉스 소리용 */
 function speak(text, rate, cb) {
   rate = rate || 0.75;
   if (!ttsOK || !text) { if (cb) setTimeout(cb, 300); return; }
@@ -1412,7 +1397,7 @@ function speak(text, rate, cb) {
   }, 80);
 }
 
-/* 연속 재생 헬퍼: texts 배열을 gap(ms) 간격으로 순서대로 발음 */
+/* 연속 재생 */
 function speakSequence(texts, rate, gap, cb) {
   if (!texts || texts.length === 0) { if (cb) cb(); return; }
   const [head, ...tail] = texts;
@@ -1426,35 +1411,34 @@ function speakSequence(texts, rate, gap, cb) {
    화면별 재생 함수
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-/* [s-sound / s-repeat] 알파벳 이름: MP3 우선, 실패 시 TTS */
+/* [s-sound / s-repeat] 알파벳 이름: Google TTS 우선, 실패 시 Web TTS */
 function playAlphaName(L, cb) {
   if (!L) { if (cb) cb(); return; }
   if (L.isWord || L.isReview) {
     speak(L.word, 0.72, cb);
     return;
   }
-  const url = ALPHA_MP3[L.lt];
-  if (url) {
-    playMP3(url, cb);
-  } else {
-    // 단일 알파벳이 아닌 경우 TTS fallback
-    speak(L.lt, 0.80, cb);
-  }
+  // Google TTS로 알파벳 이름 발음
+  const word = alphabetNameWord[L.lt] || L.lt;
+  const url  = googleTTSUrl(word);
+  playAudioUrl(url, () => {
+    // Google TTS 실패 시 Web TTS fallback
+    speak(word, 0.80, cb);
+  });
 }
 
-/* [s-image] 단어 발음 — TTS */
+/* [s-image] 단어 발음 */
 function playWordSound(L, cb) {
   if (!L) { if (cb) cb(); return; }
   const text = L.isReview ? 'review' : L.word;
-  speak(text, 0.72, cb);
+  const url  = googleTTSUrl(text);
+  playAudioUrl(url, () => speak(text, 0.72, cb));
 }
 
-/* [s-phonics] 파닉스 쪼개기 — TTS (b.sound 필드 사용) */
+/* [s-phonics] 파닉스 쪼개기 — TTS */
 function playPhonicsBreakdown(L, cb) {
   if (!L) { if (cb) cb(); return; }
-  if (!L.breakdown || L.breakdown.length === 0) {
-    playWordSound(L, cb); return;
-  }
+  if (!L.breakdown || L.breakdown.length === 0) { playWordSound(L, cb); return; }
   const sounds = L.breakdown.map(b => {
     if (b.sound) return b.sound;
     if (b.lt.length === 1 && phoneticMap[b.lt]) return phoneticMap[b.lt];
@@ -1464,26 +1448,17 @@ function playPhonicsBreakdown(L, cb) {
   speakSequence(sounds, 0.65, 500, cb);
 }
 
-/* [s-repeat] 다시듣기 버튼 */
+/* [s-repeat] 다시듣기 */
 function playRepeatSound() {
   const L = curLesson(); if (!L) return;
   playAlphaName(L);
 }
 
 /* ── 자동재생 ── */
-function autoPlaySound(L) {
-  if (!L) return;
-  setTimeout(() => playAlphaName(L), 500);
-}
-function autoPlayImage(L) {
-  if (!L) return;
-  setTimeout(() => playWordSound(L), 500);
-}
-function autoPlayPhonics(L) {
-  if (!L) return;
-  setTimeout(() => playPhonicsBreakdown(L), 500);
-}
-function autoPlayLesson(L) { autoPlaySound(L); }
+function autoPlaySound(L)   { if (!L) return; setTimeout(() => playAlphaName(L),       500); }
+function autoPlayImage(L)   { if (!L) return; setTimeout(() => playWordSound(L),        500); }
+function autoPlayPhonics(L) { if (!L) return; setTimeout(() => playPhonicsBreakdown(L), 500); }
+function autoPlayLesson(L)  { autoPlaySound(L); }
 
 /* ── play-pill 버튼 ── */
 function onPlayPill(screenId) {

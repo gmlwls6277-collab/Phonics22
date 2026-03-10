@@ -893,9 +893,9 @@ body::before{
         <span class="lc-phonics" id="lc-phonics">/b/</span>
       </div>
       <span class="lc-kor" id="lc-kor">buh · buh · buh</span>
-      <button class="play-pill" id="play-btn" onclick="onPlayPill()">
+      <button class="play-pill" id="play-btn-sound" onclick="onPlayPill('sound')">
         <span class="play-icon">🔊</span>
-        <span id="play-txt">소리 듣기</span>
+        <span class="play-txt">소리 듣기</span>
       </button>
     </div>
     <div class="btn-zone">
@@ -913,6 +913,10 @@ body::before{
       <p class="img-word fu" id="img-word" style="animation-delay:.1s">ball</p>
       <p class="img-kor fu" id="img-kor" style="animation-delay:.18s">볼</p>
       <div class="img-guide-pill fu" id="img-guide" style="animation-delay:.26s">볼</div>
+      <button class="play-pill" id="play-btn-image" onclick="onPlayPill('image')" style="margin-top:10px;">
+        <span class="play-icon">🔊</span>
+        <span class="play-txt">소리 듣기</span>
+      </button>
     </div>
     <div class="btn-zone">
       <button class="btn-primary" onclick="goStep('s-phonics')">다음 →</button>
@@ -930,6 +934,10 @@ body::before{
         <span class="pb-blend-arrow">→</span>
         <span class="pb-blend-final" id="pb-blend-final"></span>
       </div>
+      <button class="play-pill" id="play-btn-phonics" onclick="onPlayPill('phonics')" style="margin-top:12px;">
+        <span class="play-icon">🔊</span>
+        <span class="play-txt">소리 듣기</span>
+      </button>
     </div>
     <div class="btn-zone">
       <button class="btn-primary" onclick="goStep('s-repeat')">다음 →</button>
@@ -946,8 +954,9 @@ body::before{
       </div>
       <p class="rp-hint fu" id="rp-hint">buh · buh · buh</p>
       <div class="rp-guide-pill fu" id="rp-guide">buh</div>
-      <button class="play-pill" onclick="playRepeatSound()" style="margin-bottom:14px;">
-        <span class="play-icon">🔊</span><span>다시 듣기</span>
+      <button class="play-pill" id="rp-replay-btn" onclick="playRepeatSound()" style="margin-bottom:14px;">
+        <span class="play-icon">🔊</span>
+        <span id="rp-replay-lbl">B 다시 듣기</span>
       </button>
       <div class="mic-wrap">
         <button class="mic-btn idle" id="mic-btn" onclick="tapMic()">🎤</button>
@@ -1218,6 +1227,12 @@ function goStep(id) {
     showLessonChrome(stepIdx + 1, LESSON_SCREENS.length);
     document.getElementById('bottom-nav').classList.add('hidden');
   }
+  // 화면별 자동 소리 재생
+  const L = curLesson();
+  if (!L) return;
+  if (id === 's-sound')   autoPlaySound(L);
+  else if (id === 's-image')   autoPlayImage(L);
+  else if (id === 's-phonics') autoPlayPhonics(L);
 }
 
 /* ══════════════════════════════════════════════════════
@@ -1251,10 +1266,22 @@ function applyColor(el, lt) {
 const ttsOK = 'speechSynthesis' in window;
 let _voices = [];
 
+/* ─── 알파벳 이름 발음 (에이, 비, 씨…) ───
+   s-sound 화면과 s-repeat 다시듣기에 사용 */
+const alphabetNameMap = {
+  A:'A', B:'B', C:'C', D:'D', E:'E', F:'F', G:'G', H:'H',
+  I:'I', J:'J', K:'K', L:'L', M:'M', N:'N', O:'O', P:'P',
+  Q:'Q', R:'R', S:'S', T:'T', U:'U', V:'V', W:'W', X:'X',
+  Y:'Y', Z:'Z',
+};
+
+/* ─── 파닉스 발음 소리 (buh, kuh, …) ───
+   s-phonics 쪼개기 화면에 사용 */
 const phoneticMap = {
-  B:'buh',M:'muh',S:'suh',A:'ah', C:'kuh',D:'duh',P:'puh',T:'tuh',
-  H:'huh',N:'nuh',F:'fuh',G:'guh',L:'luh',R:'ruh',K:'kuh',E:'eh',
-  I:'ih', O:'ah', U:'uh', W:'wuh',Y:'yuh',Z:'zuh',V:'vuh',J:'juh',
+  B:'buh',  M:'muh',  S:'suh',  A:'ah',   C:'kuh',  D:'duh',
+  P:'puh',  T:'tuh',  H:'huh',  N:'nuh',  F:'fuh',  G:'guh',
+  L:'luh',  R:'ruh',  K:'kuh',  E:'eh',   I:'ih',   O:'ah',
+  U:'uh',   W:'wuh',  Y:'yuh',  Z:'zuh',  V:'vuh',  J:'juh',
 };
 
 function _loadVoices() {
@@ -1268,69 +1295,118 @@ function _bestVoice() {
       || null;
 }
 
-function speak(text, rate = 0.75, cb) {
-  if (!ttsOK || !text) { cb && setTimeout(cb, 300); return; }
+/* 기본 speak — iOS Safari: setTimeout 80ms 래핑 필수 */
+function speak(text, rate, cb) {
+  rate = rate || 0.75;
+  if (!ttsOK || !text) { if (cb) setTimeout(cb, 300); return; }
   window.speechSynthesis.cancel();
-  // iOS Safari requires speak() inside a short timeout
   setTimeout(() => {
     const u = new SpeechSynthesisUtterance(text);
     u.lang = 'en-US'; u.rate = rate; u.pitch = 1.1;
     const v = _bestVoice();
     if (v) u.voice = v;
-    u.onend  = () => cb && cb();
-    u.onerror = () => cb && cb();
+    u.onend  = () => { if (cb) cb(); };
+    u.onerror = () => { if (cb) cb(); };
     window.speechSynthesis.speak(u);
   }, 80);
 }
 
-function playAlphaSound(L, cb) {
-  const text = phoneticMap[L.lt] || L.lt;
-  speak(text, 0.65, cb);
+/* 연속 재생 헬퍼: texts 배열을 gap(ms) 간격으로 순서대로 발음 */
+function speakSequence(texts, rate, gap, cb) {
+  if (!texts || texts.length === 0) { if (cb) cb(); return; }
+  const [head, ...tail] = texts;
+  speak(head, rate, () => {
+    if (tail.length === 0) { if (cb) cb(); return; }
+    setTimeout(() => speakSequence(tail, rate, gap, cb), gap);
+  });
 }
 
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   화면별 TTS 함수
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+/* [s-sound] 알파벳 이름 발음: "B" → "B" (비)
+   단어 레슨(Month3)에서는 단어 전체 발음 */
+function playAlphaName(L, cb) {
+  if (!L) { if (cb) cb(); return; }
+  if (L.isWord || L.isReview) {
+    speak(L.word, 0.70, cb);
+  } else {
+    speak(L.lt, 0.70, cb);   // TTS가 알파벳 이름("B"→"비")으로 읽음
+  }
+}
+
+/* [s-image] 단어 발음: "ball" */
 function playWordSound(L, cb) {
-  if (!L) return;
+  if (!L) { if (cb) cb(); return; }
   const text = L.isReview ? 'review' : L.word;
   speak(text, 0.72, cb);
 }
 
-function autoPlayLesson(L) {
-  if (!L) return;
-  if (L.isWord || L.isReview) {
-    setTimeout(() => playWordSound(L), 500);
-  } else {
-    setTimeout(() => {
-      playAlphaSound(L, () => setTimeout(() => playWordSound(L), 700));
-    }, 500);
+/* [s-phonics] 파닉스 쪼개기: breakdown 각 소리를 순서대로
+   예) B → "buh", A → "ah", LL → "all" … → 마지막에 단어 전체 */
+function playPhonicsBreakdown(L, cb) {
+  if (!L) { if (cb) cb(); return; }
+  if (!L.breakdown || L.breakdown.length === 0) {
+    playWordSound(L, cb); return;
   }
+  // breakdown 각 항목 → phoneticMap으로 소리 또는 IPA 텍스트
+  const sounds = L.breakdown.map(b => {
+    if (b.lt.length === 1 && phoneticMap[b.lt]) return phoneticMap[b.lt];
+    // 다중 글자(ALL, OON, GLOO …)는 IPA 없이 그냥 해당 철자 그대로 읽힘
+    return b.lt;
+  });
+  // 마지막에 단어 전체 추가
+  sounds.push(L.word);
+  speakSequence(sounds, 0.65, 500, cb);
 }
 
-/* play-pill button (sound screen) */
-function onPlayPill() {
-  const L = curLesson(); if (!L) return;
-  const btn = document.getElementById('play-btn');
-  const txt = document.getElementById('play-txt');
-  btn.classList.add('playing');
-  if (txt) txt.textContent = '재생 중...';
-  const done = () => {
-    btn.classList.remove('playing');
-    if (txt) txt.textContent = '소리 듣기';
-  };
-  if (L.isWord || L.isReview) {
-    playWordSound(L, done);
-  } else {
-    playAlphaSound(L, () => setTimeout(() => playWordSound(L, done), 650));
-  }
-}
-
-/* Repeat screen — always phoneme → word */
+/* [s-repeat] 다시듣기: 알파벳 이름 발음 (s-sound 와 동일) */
 function playRepeatSound() {
   const L = curLesson(); if (!L) return;
-  if (L.isWord || L.isReview) {
-    playWordSound(L);
-  } else {
-    playAlphaSound(L, () => setTimeout(() => playWordSound(L), 650));
-  }
+  playAlphaName(L);
+}
+
+/* ── 자동재생: 화면 진입 시 호출 ── */
+
+/* s-sound 진입 → 알파벳 이름 */
+function autoPlaySound(L) {
+  if (!L) return;
+  setTimeout(() => playAlphaName(L), 500);
+}
+
+/* s-image 진입 → 단어 발음 */
+function autoPlayImage(L) {
+  if (!L) return;
+  setTimeout(() => playWordSound(L), 500);
+}
+
+/* s-phonics 진입 → 파닉스 쪼개기 */
+function autoPlayPhonics(L) {
+  if (!L) return;
+  setTimeout(() => playPhonicsBreakdown(L), 500);
+}
+
+/* startLesson / continueLesson 에서 사용 */
+function autoPlayLesson(L) {
+  autoPlaySound(L);
+}
+
+/* ── play-pill 버튼: 각 화면별 id로 구분 ── */
+function onPlayPill(screenId) {
+  const L = curLesson(); if (!L) return;
+  const btn = document.getElementById('play-btn-' + screenId);
+  const txt = btn && btn.querySelector('.play-txt');
+  if (btn) btn.classList.add('playing');
+  if (txt) txt.textContent = '재생 중…';
+  const done = () => {
+    if (btn) btn.classList.remove('playing');
+    if (txt) txt.textContent = '소리 듣기';
+  };
+  if (screenId === 'sound')   playAlphaName(L, done);
+  else if (screenId === 'image')   playWordSound(L, done);
+  else if (screenId === 'phonics') playPhonicsBreakdown(L, done);
+  else done();
 }
 
 /* ══════════════════════════════════════════════════════
@@ -1369,6 +1445,13 @@ function fillLesson(L) {
     ? Array(3).fill(L.kor).join(' · ')
     : L.guide;
   document.getElementById('rp-guide').textContent  = L.guide;
+  // 다시듣기 버튼 레이블: 알파벳 이름 or 단어
+  const rpLbl = document.getElementById('rp-replay-lbl');
+  if (rpLbl) {
+    rpLbl.textContent = (L.isWord || L.isReview)
+      ? (L.word + ' 다시 듣기')
+      : (L.lt + ' 다시 듣기');
+  }
 
   /* ─ Game screen ─ */
   buildGame(L);
@@ -1433,7 +1516,7 @@ function startLesson() {
   const L = curLesson();
   fillLesson(L);
   goStep('s-sound');
-  autoPlayLesson(L);
+  // goStep이 autoPlaySound를 호출하므로 별도 호출 불필요
 }
 
 function resumeLesson() {
@@ -1441,7 +1524,7 @@ function resumeLesson() {
   fillLesson(L);
   const step = LESSON_SCREENS.includes(ST.step) ? ST.step : 's-sound';
   goStep(step);
-  if (step === 's-sound') autoPlayLesson(L);
+  // goStep이 화면별 autoPlay를 처리
 }
 
 function skipLesson() {
@@ -1470,7 +1553,7 @@ function advance() {
     const L = curLesson();
     fillLesson(L);
     goStep('s-sound');
-    autoPlayLesson(L);
+    // goStep이 autoPlaySound 처리
   } else {
     showReward();
   }
@@ -1538,7 +1621,7 @@ function continueLesson() {
     const L = curLesson();
     fillLesson(L);
     goStep('s-sound');
-    autoPlayLesson(L);
+    // goStep이 autoPlaySound 처리
   } else {
     moveToNextWeek();
   }
@@ -1558,7 +1641,7 @@ function restartLesson() {
   const L = curLesson();
   fillLesson(L);
   goStep('s-sound');
-  autoPlayLesson(L);
+  // goStep이 autoPlaySound 처리
 }
 
 function resetAll() {

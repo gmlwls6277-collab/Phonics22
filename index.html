@@ -929,7 +929,7 @@ body::before{
     <div class="greet-mascot">🦊</div>
     <h1 class="greet-title">소리 놀이</h1>
     <p class="greet-sub">영어 알파벳 소리를<br>재미있게 배워봐요! ✨</p>
-    <button class="btn-start" onclick="showHome()">시작하기 🚀</button>
+    <button class="btn-start" onclick="unlockTTS(); showHome()">시작하기 🚀</button>
   </div>
 
   <!-- ══════════ SOUND ══════════ -->
@@ -1654,37 +1654,86 @@ const ttsOK = 'speechSynthesis' in window;
 let _voices  = [];
 let _voiceReady = false;
 
+/* ── 안드로이드는 onvoiceschanged가 늦게 오거나 안 오는 경우가 많음 ── */
 function _loadVoices() {
   const v = window.speechSynthesis.getVoices();
   if (v.length) { _voices = v; _voiceReady = true; }
 }
-// 폴링 + 이벤트 두 가지 방법으로 보이스 로드 보장
 if (ttsOK) {
   window.speechSynthesis.onvoiceschanged = _loadVoices;
   _loadVoices();
+  // 최대 5초까지 100ms 간격으로 폴링 (안드로이드 대응)
   let _pollCount = 0;
   const _poll = setInterval(() => {
     _loadVoices();
-    if (_voiceReady || ++_pollCount > 20) clearInterval(_poll);
-  }, 250);
+    if (_voiceReady || ++_pollCount > 50) clearInterval(_poll);
+  }, 100);
+}
+
+/* ── 안드로이드 크롬: 백그라운드 일시정지 버그 방지 워치독 ── */
+let _ttsWatchdog = null;
+function _startWatchdog(utterance) {
+  _stopWatchdog();
+  _ttsWatchdog = setInterval(() => {
+    if (window.speechSynthesis.paused) window.speechSynthesis.resume();
+  }, 200);
+}
+function _stopWatchdog() {
+  if (_ttsWatchdog) { clearInterval(_ttsWatchdog); _ttsWatchdog = null; }
 }
 
 function _bestVoice() {
-  // Google US English가 가장 명확 — 최우선
+  // Google US English가 가장 명확 — 최우선 (안드로이드 크롬 기본 내장)
   return _voices.find(v => /google us english/i.test(v.name))
       || _voices.find(v => /samantha/i.test(v.name)  && v.lang.startsWith('en'))
       || _voices.find(v => /karen/i.test(v.name)     && v.lang.startsWith('en'))
       || _voices.find(v => /google uk english female/i.test(v.name))
-      || _voices.find(v => v.lang === 'en-US' && !v.localService)  // 로컬 음성 제외
+      || _voices.find(v => /google/i.test(v.name)    && v.lang.startsWith('en'))  // 안드로이드 기타 Google 음성
+      || _voices.find(v => v.lang === 'en-US' && !v.localService)
       || _voices.find(v => v.lang === 'en-US')
       || _voices.find(v => v.lang.startsWith('en'))
       || null;
 }
 
-/* 핵심 speak 함수 — iOS Safari: cancel() 후 80ms 대기 필수 */
+/* ── 핵심 speak 함수 ──
+   iOS Safari : cancel() 후 80ms 대기 필수
+   안드로이드  : cancel() 후 150ms + 워치독으로 일시정지 방지 */
+const _isAndroid = /android/i.test(navigator.userAgent);
+const _isIOS     = /iP(hone|ad|od)/i.test(navigator.userAgent);
+const _cancelDelay = _isAndroid ? 150 : _isIOS ? 80 : 50;
+
+/* ── 안드로이드 첫 유저 제스처에서 TTS 잠금 해제 ──
+   빈 utterance를 한 번 실행해 브라우저 오디오 컨텍스트를 활성화 */
+function unlockTTS() {
+  if (!ttsOK) return;
+  const u = new SpeechSynthesisUtterance(' ');
+  u.volume = 0;
+  u.lang   = 'en-US';
+  window.speechSynthesis.speak(u);
+  // 음성 목록도 이 시점에 강제 로드
+  _loadVoices();
+}
+
 function speak(text, rate, pitch, cb) {
   if (!ttsOK || !text) { if (cb) setTimeout(cb, 300); return; }
+
+  // 음성 목록이 아직 없으면 최대 1초 대기 후 재시도
+  if (!_voiceReady && !_voices.length) {
+    let waited = 0;
+    const waitVoice = setInterval(() => {
+      _loadVoices();
+      waited += 100;
+      if (_voices.length || waited >= 1000) {
+        clearInterval(waitVoice);
+        speak(text, rate, pitch, cb);
+      }
+    }, 100);
+    return;
+  }
+
   window.speechSynthesis.cancel();
+  _stopWatchdog();
+
   setTimeout(() => {
     const u   = new SpeechSynthesisUtterance(text);
     u.lang    = 'en-US';
@@ -1693,10 +1742,18 @@ function speak(text, rate, pitch, cb) {
     u.volume  = 1.0;
     const v   = _bestVoice();
     if (v) u.voice = v;
-    u.onend   = () => { if (cb) cb(); };
-    u.onerror = () => { if (cb) cb(); };
+    u.onstart = () => _startWatchdog(u);
+    u.onend   = () => { _stopWatchdog(); if (cb) cb(); };
+    u.onerror = (e) => {
+      _stopWatchdog();
+      // 안드로이드에서 'interrupted' 오류는 무시 (cancel 후 발생하는 정상 이벤트)
+      if (e.error === 'interrupted') return;
+      if (cb) cb();
+    };
     window.speechSynthesis.speak(u);
-  }, 80);
+    // 안드로이드: speak() 직후 resume() 필요한 경우가 있음
+    if (_isAndroid) setTimeout(() => window.speechSynthesis.resume(), 50);
+  }, _cancelDelay);
 }
 
 /* 순서대로 발음 — gap(ms) 간격 */
